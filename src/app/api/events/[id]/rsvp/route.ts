@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 
 // POST /api/events/[id]/rsvp  — join event
 // DELETE /api/events/[id]/rsvp — leave event
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json(rsvp, { status: 201 });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
