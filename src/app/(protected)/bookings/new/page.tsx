@@ -16,11 +16,10 @@ const BOOKING_TYPE_MAP: Record<string, BookingType> = {
   daycare:  "DAYCARE",
 };
 
-export default async function NewBookingPage({
-  searchParams,
-}: {
-  searchParams: { type?: string };
+export default async function NewBookingPage(props: {
+  searchParams: Promise<{ type?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
 

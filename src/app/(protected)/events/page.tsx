@@ -7,7 +7,8 @@ import EventCard from "@/components/events/EventCard";
 
 export const metadata = { title: "Community Events" };
 
-export default async function EventsPage({ searchParams }: { searchParams: { category?: string } }) {
+export default async function EventsPage(props: { searchParams: Promise<{ category?: string }> }) {
+  const searchParams = await props.searchParams;
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
   const user = await prisma.user.findUnique({ where: { clerkId: clerkUser.id } });

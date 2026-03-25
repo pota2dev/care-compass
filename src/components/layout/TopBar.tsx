@@ -6,9 +6,10 @@ import Link from "next/link";
 
 interface TopBarProps {
   user: { name: string; email: string; imageUrl: string };
+  unreadCount?: number;
 }
 
-export default function TopBar({ user }: TopBarProps) {
+export default function TopBar({ user, unreadCount }: TopBarProps) {
   return (
     <header className="h-16 bg-white border-b border-forest-500/10 px-6 flex items-center justify-between sticky top-0 z-10">
       <div>

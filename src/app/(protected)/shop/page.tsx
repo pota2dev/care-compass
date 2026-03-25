@@ -14,12 +14,11 @@ const CATEGORIES: { value: ProductCategory | "ALL"; label: string }[] = [
   { value: "GROOMING_SUPPLIES", label: "Grooming" },
 ];
 
-export default async function ShopPage({
-  searchParams,
-}: {
-  searchParams: { category?: string };
+export default async function ShopPage(props: {
+  searchParams: Promise<{ category?: string }>;
 }) {
-  const category = searchParams.category as ProductCategory | undefined;
+  const searchParams = await props.searchParams;
+  const category = searchParams.category as ProductCategory | "ALL" | undefined;
 
   const products = await prisma.product.findMany({
     where: {

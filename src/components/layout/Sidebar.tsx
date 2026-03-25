@@ -35,7 +35,7 @@ const NAV_ITEMS = [
   ]},
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ user }: { user?: any }) {
   const pathname = usePathname();
   const { signOut } = useClerk();
 
