@@ -44,3 +44,5 @@ prisma/migrations/
 /src/_instructions
 DESIGN.md
 AGENTS.md
+# next-agents-md
+.next-docs/
