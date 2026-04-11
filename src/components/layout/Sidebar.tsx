@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { useUser, useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   PawPrint,
@@ -12,14 +12,12 @@ import {
   Scissors,
   Home,
   Heart,
-  Users,
   AlertTriangle,
   User,
   Bell,
   Settings,
   LogOut,
 } from "lucide-react";
-import { useClerk } from "@clerk/nextjs";
 
 const NAV_ITEMS = [
   {
@@ -64,47 +62,94 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
   const { signOut } = useClerk();
 
   return (
-    <aside className="hidden lg:flex w-60 flex-col bg-white border-r border-forest-500/10 sticky top-0 h-screen">
+    <aside
+      className="hidden lg:flex w-60 flex-col bg-white border-r sticky top-0 h-screen"
+      style={{ borderColor: "rgba(45,80,22,0.1)" }}
+    >
       {/* Logo */}
-      <div className="p-5 border-b border-forest-500/10">
+      <div
+        className="p-5 border-b"
+        style={{ borderColor: "rgba(45,80,22,0.1)" }}
+      >
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-forest-500 rounded-lg flex items-center justify-center text-base">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+            style={{ backgroundColor: "#2D5016" }}
+          >
             🐾
           </div>
-          <span className="font-display font-bold text-lg text-forest-500">
+          <span
+            className="font-display font-bold text-lg"
+            style={{ color: "#2D5016" }}
+          >
             CareCompass
           </span>
         </Link>
       </div>
 
+      {/* User pill */}
+      {user && (
+        <div
+          className="mx-3 mt-3 p-3 rounded-xl flex items-center gap-2.5"
+          style={{ backgroundColor: "#FAF7F2" }}
+        >
+          <img
+            src={user.imageUrl}
+            alt={user.fullName ?? "User"}
+            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {user.fullName}
+            </p>
+            <p className="text-[10px] truncate" style={{ color: "#8A9480" }}>
+              {user.emailAddresses[0]?.emailAddress}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-5">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-5 mt-2">
         {NAV_ITEMS.map((section) => (
           <div key={section.label}>
-            <p className="px-3 mb-1.5 text-[10px] font-medium text-forest-400/50 uppercase tracking-widest">
+            <p
+              className="px-3 mb-1.5 text-[10px] font-medium uppercase tracking-widest"
+              style={{ color: "rgba(45,80,22,0.4)" }}
+            >
               {section.label}
             </p>
             {section.items.map((item) => {
               const isActive =
-                pathname === item.href || pathname.startsWith(item.href + "/");
+                pathname === item.href ||
+                (item.href !== "/dashboard" &&
+                  pathname.startsWith(item.href.split("?")[0]));
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={cn(
-                    "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all mb-0.5",
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all mb-0.5"
+                  style={
                     isActive
-                      ? "bg-forest-100 text-forest-500 font-medium"
-                      : "text-forest-400/70 hover:bg-cream-100 hover:text-forest-500",
-                  )}
+                      ? {
+                          backgroundColor: "#C8DFB0",
+                          color: "#2D5016",
+                          fontWeight: 500,
+                        }
+                      : { color: "rgba(45,80,22,0.7)" }
+                  }
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   <span className="flex-1">{item.label}</span>
                   {item.badge && (
-                    <span className="bg-clay text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                    <span
+                      className="text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: "#C8593A" }}
+                    >
                       {item.badge}
                     </span>
                   )}
@@ -116,10 +161,14 @@ export default function Sidebar() {
       </nav>
 
       {/* Sign out */}
-      <div className="p-3 border-t border-forest-500/10">
+      <div
+        className="p-3 border-t"
+        style={{ borderColor: "rgba(45,80,22,0.1)" }}
+      >
         <button
           onClick={() => signOut({ redirectUrl: "/" })}
-          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-forest-400/70 hover:bg-clay-light hover:text-clay transition-all"
+          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm transition-all"
+          style={{ color: "rgba(45,80,22,0.7)" }}
         >
           <LogOut className="w-4 h-4" />
           Sign Out
