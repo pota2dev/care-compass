@@ -18,9 +18,13 @@ export default async function OrderDetailPage({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { new?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ new?: string }>;
 }) {
+  const { id } = await params;
+  const { new: isNewParam } = await searchParams;
+  const isNew = isNewParam === "true";
+
   const clerkUser = await currentUser();
   if (!clerkUser) return null;
 
@@ -30,7 +34,7 @@ export default async function OrderDetailPage({
   if (!user) return null;
 
   const order = await prisma.order.findFirst({
-    where: { id: params.id, userId: user.id },
+    where: { id, userId: user.id },
     include: {
       items: {
         include: {
@@ -43,8 +47,6 @@ export default async function OrderDetailPage({
   });
 
   if (!order) notFound();
-
-  const isNew = searchParams.new === "true";
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -72,7 +74,7 @@ export default async function OrderDetailPage({
         </div>
       </div>
 
-      {/* Success banner for new orders */}
+      {/* Success banner */}
       {isNew && (
         <div
           className="rounded-2xl p-5 mb-5 flex items-center gap-4"
@@ -109,7 +111,7 @@ export default async function OrderDetailPage({
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-4 h-4" style={{ color: "#4A7C28" }} />
             <h2 className="font-display text-base font-semibold">
-              Delivery Address
+              Delivery Details
             </h2>
           </div>
           <p className="text-sm" style={{ color: "#4A7C28" }}>
