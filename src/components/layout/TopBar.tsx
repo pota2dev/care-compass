@@ -3,7 +3,12 @@
 import { Bell } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import CartIcon from "@/components/shop/CartIcon";
+import dynamic from "next/dynamic";
+
+const CartIcon = dynamic(() => import("@/components/shop/CartIcon"), {
+  ssr: false,
+  loading: () => <div className="w-9 h-9" />,
+});
 
 interface TopBarProps {
   user: { name: string; email: string; imageUrl: string };
