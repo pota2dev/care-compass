@@ -17,6 +17,8 @@ import {
   Bell,
   Settings,
   LogOut,
+  Wallet,
+  Search
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -25,6 +27,7 @@ const NAV_ITEMS = [
     items: [
       { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
       { href: "/pets", icon: PawPrint, label: "My Pets" },
+      { href: "/expenses", icon: Wallet, label: "Expenses" },
       { href: "/bookings", icon: CalendarDays, label: "Bookings", badge: 3 },
       { href: "/shop/orders", icon: ShoppingCart, label: "Orders" },
     ],
@@ -48,6 +51,7 @@ const NAV_ITEMS = [
       { href: "/events", icon: CalendarCheck, label: "Events" },
       { href: "/adoption", icon: Heart, label: "Adoption" },
       { href: "/rescue", icon: AlertTriangle, label: "Rescue" },
+      { href: "/lost-found", icon: Search, label: "Lost & Found" }
     ],
   },
   {

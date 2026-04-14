@@ -53,6 +53,7 @@ model User {
   lostFoundPets LostFoundPet[]
   notifications Notification[]
   reviews       Review[]
+  petExpenses   PetExpense[]
   provider      ServiceProvider?
 
   @@map("users")
@@ -119,6 +120,7 @@ model Pet {
   bookings      Booking[]
   adoptionPosts AdoptionPost[]
   healthRecords HealthRecord[]
+  expenses      PetExpense[]
 
   @@map("pets")
 }
@@ -491,3 +493,30 @@ model LostFoundPet {
   @@map("lost_found_pets")
 }
 
+// ─────────────────────────────────────────────
+// EXPENSES
+// ─────────────────────────────────────────────
+
+enum ExpenseCategory {
+  FOOD
+  MEDICAL
+  TOYS
+  GROOMING
+  OTHER
+}
+
+model PetExpense {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  petId       String
+  pet         Pet             @relation(fields: [petId], references: [id], onDelete: Cascade)
+  amount      Float
+  category    ExpenseCategory
+  date        DateTime
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("pet_expenses")
+}
