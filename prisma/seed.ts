@@ -72,6 +72,7 @@ async function upsertProvider(
     },
   });
   // Always delete old timeslots and recreate fresh ones so they're in the future
+  await prisma.booking.deleteMany({ where: { timeslot: { providerId: provider.id } } });
   await prisma.timeslot.deleteMany({ where: { providerId: provider.id } });
   return provider;
 }
