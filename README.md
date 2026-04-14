@@ -1,1 +1,1 @@
-# 🐾 Pet CareCompass
+# 🐾 CareCompass
