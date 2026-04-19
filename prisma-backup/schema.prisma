@@ -1,0 +1,456 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// USER & ROLES
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  PET_OWNER
+  SERVICE_PROVIDER
+  ADMIN
+}
+
+enum ProviderType {
+  VET_CLINIC
+  GROOMING
+  DAYCARE
+  SHOP
+  RESCUE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String
+  phone     String?
+  avatarUrl String?
+  role      UserRole @default(PET_OWNER)
+  address   String?
+  city      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  pets          Pet[]
+  bookings      Booking[]
+  orders        Order[]
+  events        Event[]
+  eventRsvps    EventRsvp[]
+  adoptionPosts AdoptionPost[]
+  adoptionReqs  AdoptionRequest[]
+  rescueReports RescueReport[]
+  notifications Notification[]
+  reviews       Review[]
+  provider      ServiceProvider?
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// SERVICE PROVIDER
+// ─────────────────────────────────────────────
+
+model ServiceProvider {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  type        ProviderType
+  description String?
+  address     String
+  city        String
+  phone       String
+  email       String
+  logoUrl     String?
+  isVerified  Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  rating      Float        @default(0)
+  reviewCount Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  bookings   Booking[]
+  products   Product[]
+  timeslots  Timeslot[]
+  reviews    Review[]
+
+  @@map("service_providers")
+}
+
+// ─────────────────────────────────────────────
+// PETS
+// ─────────────────────────────────────────────
+
+enum PetGender {
+  MALE
+  FEMALE
+}
+
+model Pet {
+  id          String    @id @default(cuid())
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  species     String
+  breed       String?
+  gender      PetGender
+  dateOfBirth DateTime?
+  weight      Float?
+  color       String?
+  microchipId String?
+  photoUrl    String?
+  notes       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  bookings      Booking[]
+  adoptionPosts AdoptionPost[]
+  healthRecords HealthRecord[]
+
+  @@map("pets")
+}
+
+model HealthRecord {
+  id          String   @id @default(cuid())
+  petId       String
+  pet         Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  type        String
+  description String
+  date        DateTime
+  nextDueDate DateTime?
+  vetName     String?
+  createdAt   DateTime @default(now())
+
+  @@map("health_records")
+}
+
+// ─────────────────────────────────────────────
+// BOOKINGS
+// ─────────────────────────────────────────────
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingType {
+  VET_APPOINTMENT
+  GROOMING
+  DAYCARE
+}
+
+model Timeslot {
+  id         String          @id @default(cuid())
+  providerId String
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  startTime  DateTime
+  endTime    DateTime
+  isAvailable Boolean        @default(true)
+  maxCapacity Int            @default(1)
+  bookedCount Int            @default(0)
+  createdAt   DateTime       @default(now())
+
+  bookings Booking[]
+
+  @@map("timeslots")
+}
+
+model Booking {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  petId       String
+  pet         Pet             @relation(fields: [petId], references: [id])
+  providerId  String
+  provider    ServiceProvider @relation(fields: [providerId], references: [id])
+  timeslotId  String
+  timeslot    Timeslot        @relation(fields: [timeslotId], references: [id])
+  type        BookingType
+  status      BookingStatus   @default(PENDING)
+  notes       String?
+  totalAmount Float           @default(0)
+  isPaid      Boolean         @default(false)
+  stripePaymentId String?
+  isHomeService Boolean       @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("bookings")
+}
+
+// ─────────────────────────────────────────────
+// SHOP & ORDERS
+// ─────────────────────────────────────────────
+
+enum ProductCategory {
+  FOOD
+  TOYS
+  ACCESSORIES
+  MEDICINE
+  GROOMING_SUPPLIES
+  OTHER
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  providerId  String?
+  provider    ServiceProvider? @relation(fields: [providerId], references: [id])
+  name        String
+  description String?
+  price       Float
+  stock       Int             @default(0)
+  category    ProductCategory
+  imageUrl    String?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  stripePaymentId String?
+  stripeSessionId String?
+  shippingAddress String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Float
+
+  @@map("order_items")
+}
+
+// ─────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────
+
+enum EventCategory {
+  MEETUP
+  ADOPTION_FAIR
+  VACCINATION_CAMP
+  TRAINING_WORKSHOP
+  PET_SHOW
+  OTHER
+}
+
+model Event {
+  id          String        @id @default(cuid())
+  creatorId   String
+  creator     User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  category    EventCategory @default(MEETUP)
+  location    String
+  city        String
+  latitude    Float?
+  longitude   Float?
+  startDate   DateTime
+  endDate     DateTime?
+  maxAttendees Int?
+  imageUrl    String?
+  isFree      Boolean       @default(true)
+  fee         Float?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  rsvps EventRsvp[]
+
+  @@map("events")
+}
+
+model EventRsvp {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@map("event_rsvps")
+}
+
+// ─────────────────────────────────────────────
+// ADOPTION
+// ─────────────────────────────────────────────
+
+enum AdoptionType {
+  PERMANENT
+  TEMPORARY_FOSTER
+}
+
+enum AdoptionStatus {
+  OPEN
+  PENDING
+  ADOPTED
+  CLOSED
+}
+
+model AdoptionPost {
+  id          String         @id @default(cuid())
+  ownerId     String
+  owner       User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  petId       String
+  pet         Pet            @relation(fields: [petId], references: [id])
+  type        AdoptionType
+  status      AdoptionStatus @default(OPEN)
+  reason      String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  requests AdoptionRequest[]
+
+  @@map("adoption_posts")
+}
+
+enum AdoptionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model AdoptionRequest {
+  id        String                @id @default(cuid())
+  postId    String
+  post      AdoptionPost          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String?
+  status    AdoptionRequestStatus @default(PENDING)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  @@map("adoption_requests")
+}
+
+// ─────────────────────────────────────────────
+// RESCUE
+// ─────────────────────────────────────────────
+
+enum RescueStatus {
+  REPORTED
+  ASSIGNED
+  IN_PROGRESS
+  RESCUED
+  CLOSED
+}
+
+enum RescueUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model RescueReport {
+  id          String        @id @default(cuid())
+  reporterId  String
+  reporter    User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  animalType  String
+  condition   String
+  location    String
+  city        String
+  latitude    Float?
+  longitude   Float?
+  description String?
+  imageUrl    String?
+  urgency     RescueUrgency @default(MEDIUM)
+  status      RescueStatus  @default(REPORTED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("rescue_reports")
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_REMINDER
+  BOOKING_CANCELLED
+  ORDER_SHIPPED
+  ADOPTION_REQUEST
+  RESCUE_UPDATE
+  EVENT_REMINDER
+  HEALTH_REMINDER
+  GENERAL
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+// ─────────────────────────────────────────────
+// REVIEWS
+// ─────────────────────────────────────────────
+
+model Review {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String?
+  createdAt  DateTime        @default(now())
+
+  @@unique([userId, providerId])
+  @@map("reviews")
+}
