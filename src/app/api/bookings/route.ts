@@ -40,13 +40,11 @@ export async function POST(req: NextRequest) {
   const parsed = createBookingSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-  // Check timeslot availability
   const timeslot = await prisma.timeslot.findUnique({ where: { id: parsed.data.timeslotId } });
   if (!timeslot || !timeslot.isAvailable || timeslot.bookedCount >= timeslot.maxCapacity) {
     return NextResponse.json({ error: "Timeslot not available" }, { status: 409 });
   }
 
-  // Create booking + update timeslot in transaction
   const booking = await prisma.$transaction(async (tx) => {
     const newBooking = await tx.booking.create({
       data: {
@@ -65,28 +63,31 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create notification
+    // Create notification that leads back to the main bookings page
     await tx.notification.create({
       data: {
         userId: user.id,
         type: "BOOKING_CONFIRMED",
         title: "Booking Confirmed",
         message: `Your ${parsed.data.type.replace("_", " ").toLowerCase()} for ${newBooking.pet.name} has been confirmed.`,
-        link: `/bookings/${newBooking.id}`,
+        link: "/bookings", 
       },
     });
 
     return newBooking;
   });
 
-  // Send SMS if user has phone
   if (user.phone) {
-    await sendBookingConfirmationSMS(
-      user.phone,
-      booking.pet.name,
-      booking.type.replace("_", " "),
-      booking.timeslot.startTime.toLocaleString()
-    );
+    try {
+      await sendBookingConfirmationSMS(
+        user.phone,
+        booking.pet.name,
+        booking.type.replace("_", " "),
+        booking.timeslot.startTime.toLocaleString()
+      );
+    } catch (error) {
+      console.error("SMS failed to send, but booking was successful:", error);
+    }
   }
 
   return NextResponse.json(booking, { status: 201 });
