@@ -1,12 +1,6 @@
 import { Resend } from "resend";
 
-// Lazy init — only creates client when actually sending, not at build time
-function getResend() {
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error("RESEND_API_KEY is not set");
-  }
-  return new Resend(process.env.RESEND_API_KEY);
-}
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 const FROM = "Pet CareCompass <onboarding@resend.dev>";
 // During dev/testing with Resend free tier you can use:
@@ -196,7 +190,7 @@ export async function sendBookingConfirmationEmail({
     ${emailButton("View My Bookings →", `${process.env.NEXT_PUBLIC_APP_URL}/bookings`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `✅ Booking Confirmed — ${serviceType.replace("_", " ")} for ${petName}`,
@@ -246,7 +240,7 @@ export async function sendBookingReminderEmail({
     ${emailButton("View Booking Details →", `${process.env.NEXT_PUBLIC_APP_URL}/bookings`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `⏰ Reminder — ${petName}'s appointment is tomorrow!`,
@@ -336,7 +330,7 @@ export async function sendOrderConfirmationEmail({
     ${emailButton("Track My Order →", `${process.env.NEXT_PUBLIC_APP_URL}/shop/orders/${orderId}`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `📦 Order Confirmed — #${orderId.slice(-8).toUpperCase()} · ৳ ${totalAmount.toLocaleString()}`,
@@ -381,7 +375,7 @@ export async function sendOrderDeliveredEmail({
     ${emailButton("Shop Again →", `${process.env.NEXT_PUBLIC_APP_URL}/shop`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `✅ Delivered — Order #${orderId.slice(-8).toUpperCase()}`,
@@ -466,7 +460,7 @@ export async function sendRescueConfirmationEmail({
     ${emailButton("View Report Status →", `${process.env.NEXT_PUBLIC_APP_URL}/rescue`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `🚨 Rescue Report #${reportId.slice(-8).toUpperCase()} — ${animalType} in ${urgency} urgency`,
