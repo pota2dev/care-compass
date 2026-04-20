@@ -68,7 +68,9 @@ export async function POST(req: NextRequest) {
         userId:        user.id,
         status:        "CONFIRMED",
         isHomeService: parsed.data.isHomeService ?? false,
-        homeAddress:   parsed.data.homeAddress ?? null,
+        notes: parsed.data.isHomeService && parsed.data.homeAddress
+          ? `HOME SERVICE — Address: ${parsed.data.homeAddress}${parsed.data.notes ? `. Notes: ${parsed.data.notes}` : ""}`
+          : parsed.data.notes ?? null,
       },
       include: { provider: true, pet: true, timeslot: true },
     });
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
     dateTime,
     bookingId:       booking.id,
     isHomeService:   booking.isHomeService,
-    homeAddress:     booking.homeAddress ?? undefined,
+    homeAddress:     parsed.data.homeAddress,
   }).catch((err) => console.error("Booking email error:", err));
 
   return NextResponse.json(booking, { status: 201 });
