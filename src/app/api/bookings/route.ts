@@ -31,7 +31,6 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  // Get both auth (fast) and currentUser (has email) in parallel
   const [{ userId: clerkId }, clerkUser] = await Promise.all([
     auth(),
     currentUser(),
@@ -41,7 +40,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ✅ Always use the email directly from Clerk — this is the login email
   const clerkEmail = clerkUser.emailAddresses[0]?.emailAddress ?? "";
   const clerkName  = clerkUser.fullName ?? clerkUser.firstName ?? "there";
 
@@ -61,16 +59,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Timeslot not available" }, { status: 409 });
   }
 
+  // Store home address inside notes field — no schema change needed
+  const finalNotes = parsed.data.isHomeService && parsed.data.homeAddress
+    ? `HOME SERVICE — Address: ${parsed.data.homeAddress}${parsed.data.notes ? `. Notes: ${parsed.data.notes}` : ""}`
+    : parsed.data.notes ?? null;
+
   const booking = await prisma.$transaction(async (tx) => {
     const newBooking = await tx.booking.create({
       data: {
-        ...parsed.data,
+        petId:         parsed.data.petId,
+        providerId:    parsed.data.providerId,
+        timeslotId:    parsed.data.timeslotId,
+        type:          parsed.data.type,
         userId:        user.id,
         status:        "CONFIRMED",
         isHomeService: parsed.data.isHomeService ?? false,
-        notes: parsed.data.isHomeService && parsed.data.homeAddress
-          ? `HOME SERVICE — Address: ${parsed.data.homeAddress}${parsed.data.notes ? `. Notes: ${parsed.data.notes}` : ""}`
-          : parsed.data.notes ?? null,
+        notes:         finalNotes,
       },
       include: { provider: true, pet: true, timeslot: true },
     });
@@ -97,14 +101,13 @@ export async function POST(req: NextRequest) {
     return newBooking;
   });
 
-  // Send to Clerk email address directly
   const dateTime = new Date(booking.timeslot.startTime).toLocaleString("en-BD", {
     weekday: "long", year: "numeric", month: "long",
     day: "numeric", hour: "2-digit", minute: "2-digit",
   });
 
   sendBookingConfirmationEmail({
-    to:              clerkEmail,   // ← Clerk login email
+    to:              clerkEmail,
     userName:        clerkName,
     petName:         booking.pet.name,
     serviceType:     booking.type,
