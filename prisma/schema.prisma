@@ -188,6 +188,7 @@ model Booking {
   isPaid      Boolean         @default(false)
   stripePaymentId String?
   isHomeService Boolean       @default(false)
+  homeAddress string?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
