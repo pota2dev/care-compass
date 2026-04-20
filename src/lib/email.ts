@@ -2,10 +2,12 @@ import { Resend } from "resend";
 
 // Lazy init — only creates client when actually sending, not at build time
 function getResend() {
-  if (!process.env.RESEND_API_KEY) {
+  const key = process.env.RESEND_API_KEY;
+  console.log("RESEND_API_KEY loaded:", !!key, "starts with:", key?.slice(0, 6));
+  if (!key) {
     throw new Error("RESEND_API_KEY is not set");
   }
-  return new Resend(process.env.RESEND_API_KEY);
+  return new Resend(key);
 }
 
 const FROM = "Pet CareCompass <onboarding@resend.dev>";
