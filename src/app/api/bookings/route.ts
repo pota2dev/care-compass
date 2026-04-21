@@ -1,6 +1,19 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { sendBookingConfirmationEmail } from "@/lib/email";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { z } from "zod";
 
+const createBookingSchema = z.object({
+  type: z.enum(["VET_APPOINTMENT", "GROOMING", "DAYCARE"]),
+  timeslotId: z.string(),
+  petId: z.string(),
+  providerId: z.string(),
+  isHomeService: z.boolean().optional(),
+  homeAddress: z.string().optional(),
+  notes: z.string().optional(),
+  totalAmount: z.number().optional()
+});
 export async function POST(req: NextRequest) {
   const [{ userId: clerkId }, clerkUser] = await Promise.all([
     auth(),
