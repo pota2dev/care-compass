@@ -529,7 +529,12 @@ model PetExpense {
 // ─────────────────────────────────────────────
 // CHAT
 // ─────────────────────────────────────────────
-
+enum ChatRoomType {
+  ADMIN_SUPPORT
+  DAYCARE
+  SHOP
+  RESCUE
+}
 model ChatRoom {
   id           String       @id @default(cuid())
   type         ChatRoomType
