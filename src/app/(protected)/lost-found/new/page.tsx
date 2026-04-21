@@ -2,7 +2,9 @@ import { createLostFoundPost } from "@/actions/lost-found";
 import { LostFoundType } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { MapPin, ArrowLeft } from "lucide-react";
+import { FileUploadDropzone } from "@/components/shared/file-upload-dropzone";
 import Link from "next/link";
+import { put } from "@vercel/blob";
 
 export default function NewLostFoundPage() {
   return (
@@ -28,7 +30,14 @@ export default function NewLostFoundPage() {
           const city = formData.get("city") as string;
           const lat = formData.get("latitude");
           const lng = formData.get("longitude");
-          const imageUrl = formData.get("imageUrl") as string;
+          const imageFile = formData.get("imageFile") as File | null;
+          let imageUrl: string | undefined = undefined;
+
+          if (imageFile && imageFile.size > 0) {
+            const blob = await put(imageFile.name, imageFile, { access: 'public' });
+            imageUrl = blob.url;
+          }
+          
           const dateLostOrFound = formData.get("date") as string;
 
           const data = {
@@ -40,7 +49,7 @@ export default function NewLostFoundPage() {
             city,
             latitude: lat ? parseFloat(lat as string) : undefined,
             longitude: lng ? parseFloat(lng as string) : undefined,
-            imageUrl: imageUrl || undefined,
+            imageUrl: imageUrl,
             dateLostOrFound: new Date(dateLostOrFound),
           };
 
@@ -74,9 +83,12 @@ export default function NewLostFoundPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-900">Image URL</label>
-            <input type="url" name="imageUrl" className="w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-forest-500 focus:border-forest-500 outline-none transition-all" placeholder="https://..." />
-            <p className="text-xs text-gray-500 mt-1">Provide a link to an image of the pet if available.</p>
+            <label className="text-sm font-medium text-gray-900">Image</label>
+            <FileUploadDropzone 
+              name="imageFile" 
+              accept="image/*" 
+              subText="JPEG, PNG, WEBP allowed"
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
