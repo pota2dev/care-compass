@@ -1,6 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import PetCareClient from "@/components/pet-care/PetCareClient";
+import PetCareClient from "../../../components/pet-care/PetCareClient";
 
 export default async function PetCarePage() {
   const clerkUser = await currentUser();
