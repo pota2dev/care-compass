@@ -525,3 +525,37 @@ model PetExpense {
 
   @@map("pet_expenses")
 }
+
+// ─────────────────────────────────────────────
+// CHAT
+// ─────────────────────────────────────────────
+
+model ChatRoom {
+  id           String       @id @default(cuid())
+  type         ChatRoomType
+  userId       String
+  user         User         @relation("UserChatRooms", fields: [userId], references: [id], onDelete: Cascade)
+  providerName String?
+  subject      String?
+  isOpen       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  messages ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  roomId    String
+  room      ChatRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User        @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName String
+  content   String
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  @@map("chat_messages")
+}
