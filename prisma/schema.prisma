@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,7 +9,7 @@ datasource db {
 }
 
 // ─────────────────────────────────────────────
-// USER & ROLES
+// ENUMS
 // ─────────────────────────────────────────────
 
 enum UserRole {
@@ -28,6 +26,108 @@ enum ProviderType {
   RESCUE
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingType {
+  VET_APPOINTMENT
+  GROOMING
+  DAYCARE
+}
+
+enum PetGender {
+  MALE
+  FEMALE
+}
+
+enum ProductCategory {
+  FOOD
+  TOYS
+  ACCESSORIES
+  MEDICINE
+  GROOMING_SUPPLIES
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum EventCategory {
+  MEETUP
+  ADOPTION_FAIR
+  VACCINATION_CAMP
+  TRAINING_WORKSHOP
+  PET_SHOW
+  OTHER
+}
+
+enum AdoptionType {
+  PERMANENT
+  TEMPORARY_FOSTER
+}
+
+enum AdoptionStatus {
+  OPEN
+  PENDING
+  ADOPTED
+  CLOSED
+}
+
+enum AdoptionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RescueStatus {
+  REPORTED
+  ASSIGNED
+  IN_PROGRESS
+  RESCUED
+  CLOSED
+}
+
+enum RescueUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_REMINDER
+  BOOKING_CANCELLED
+  ORDER_SHIPPED
+  ADOPTION_REQUEST
+  RESCUE_UPDATE
+  EVENT_REMINDER
+  HEALTH_REMINDER
+  GENERAL
+}
+
+enum ChatRoomType {
+  ADMIN_SUPPORT
+  DAYCARE
+  SHOP
+  RESCUE
+}
+
+// ─────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────
+
 model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique
@@ -41,19 +141,19 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
-  pets          Pet[]
-  bookings      Booking[]
-  orders        Order[]
-  events        Event[]
-  eventRsvps    EventRsvp[]
-  adoptionPosts AdoptionPost[]
-  adoptionReqs  AdoptionRequest[]
-  rescueReports RescueReport[]
-  lostFoundPets LostFoundPet[]
-  notifications Notification[]
-  reviews       Review[]
-  provider      ServiceProvider?
+  pets            Pet[]
+  bookings        Booking[]
+  orders          Order[]
+  events          Event[]
+  eventRsvps      EventRsvp[]
+  adoptionPosts   AdoptionPost[]
+  adoptionReqs    AdoptionRequest[]
+  rescueReports   RescueReport[]
+  notifications   Notification[]
+  reviews         Review[]
+  provider        ServiceProvider?
+  chatRooms       ChatRoom[]      @relation("UserChatRooms")
+  chatMessages    ChatMessage[]   @relation("UserMessages")
 
   @@map("users")
 }
@@ -74,6 +174,8 @@ model ServiceProvider {
   phone       String
   email       String
   logoUrl     String?
+  latitude    Float?
+  longitude   Float?
   isVerified  Boolean      @default(false)
   isActive    Boolean      @default(true)
   rating      Float        @default(0)
@@ -81,10 +183,10 @@ model ServiceProvider {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  bookings   Booking[]
-  products   Product[]
-  timeslots  Timeslot[]
-  reviews    Review[]
+  bookings  Booking[]
+  products  Product[]
+  timeslots Timeslot[]
+  reviews   Review[]
 
   @@map("service_providers")
 }
@@ -92,11 +194,6 @@ model ServiceProvider {
 // ─────────────────────────────────────────────
 // PETS
 // ─────────────────────────────────────────────
-
-enum PetGender {
-  MALE
-  FEMALE
-}
 
 model Pet {
   id          String    @id @default(cuid())
@@ -141,30 +238,16 @@ model HealthRecord {
 // BOOKINGS
 // ─────────────────────────────────────────────
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-enum BookingType {
-  VET_APPOINTMENT
-  GROOMING
-  DAYCARE
-}
-
 model Timeslot {
-  id         String          @id @default(cuid())
-  providerId String
-  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  startTime  DateTime
-  endTime    DateTime
-  isAvailable Boolean        @default(true)
-  maxCapacity Int            @default(1)
-  bookedCount Int            @default(0)
-  createdAt   DateTime       @default(now())
+  id          String          @id @default(cuid())
+  providerId  String
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  startTime   DateTime
+  endTime     DateTime
+  isAvailable Boolean         @default(true)
+  maxCapacity Int             @default(1)
+  bookedCount Int             @default(0)
+  createdAt   DateTime        @default(now())
 
   bookings Booking[]
 
@@ -172,40 +255,32 @@ model Timeslot {
 }
 
 model Booking {
-  id          String          @id @default(cuid())
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  petId       String
-  pet         Pet             @relation(fields: [petId], references: [id])
-  providerId  String
-  provider    ServiceProvider @relation(fields: [providerId], references: [id])
-  timeslotId  String
-  timeslot    Timeslot        @relation(fields: [timeslotId], references: [id])
-  type        BookingType
-  status      BookingStatus   @default(PENDING)
-  notes       String?
-  totalAmount Float           @default(0)
-  isPaid      Boolean         @default(false)
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  petId           String
+  pet             Pet             @relation(fields: [petId], references: [id])
+  providerId      String
+  provider        ServiceProvider @relation(fields: [providerId], references: [id])
+  timeslotId      String
+  timeslot        Timeslot        @relation(fields: [timeslotId], references: [id])
+  type            BookingType
+  status          BookingStatus   @default(PENDING)
+  notes           String?
+  totalAmount     Float           @default(0)
+  isPaid          Boolean         @default(false)
+  isHomeService   Boolean         @default(false)
+  homeAddress     String?
   stripePaymentId String?
-  isHomeService Boolean       @default(false)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   @@map("bookings")
 }
 
 // ─────────────────────────────────────────────
-// SHOP & ORDERS
+// SHOP
 // ─────────────────────────────────────────────
-
-enum ProductCategory {
-  FOOD
-  TOYS
-  ACCESSORIES
-  MEDICINE
-  GROOMING_SUPPLIES
-  OTHER
-}
 
 model Product {
   id          String          @id @default(cuid())
@@ -224,15 +299,6 @@ model Product {
   orderItems OrderItem[]
 
   @@map("products")
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
 }
 
 model Order {
@@ -268,35 +334,26 @@ model OrderItem {
 // EVENTS
 // ─────────────────────────────────────────────
 
-enum EventCategory {
-  MEETUP
-  ADOPTION_FAIR
-  VACCINATION_CAMP
-  TRAINING_WORKSHOP
-  PET_SHOW
-  OTHER
-}
-
 model Event {
-  id          String        @id @default(cuid())
-  creatorId   String
-  creator     User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  category    EventCategory @default(MEETUP)
-  location    String
-  city        String
-  latitude    Float?
-  longitude   Float?
-  startDate   DateTime
-  endDate     DateTime?
+  id           String        @id @default(cuid())
+  creatorId    String
+  creator      User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  category     EventCategory @default(MEETUP)
+  location     String
+  city         String
+  latitude     Float?
+  longitude    Float?
+  startDate    DateTime
+  endDate      DateTime?
   maxAttendees Int?
-  imageUrl    String?
-  isFree      Boolean       @default(true)
-  fee         Float?
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  imageUrl     String?
+  isFree       Boolean       @default(true)
+  fee          Float?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   rsvps EventRsvp[]
 
@@ -319,18 +376,6 @@ model EventRsvp {
 // ADOPTION
 // ─────────────────────────────────────────────
 
-enum AdoptionType {
-  PERMANENT
-  TEMPORARY_FOSTER
-}
-
-enum AdoptionStatus {
-  OPEN
-  PENDING
-  ADOPTED
-  CLOSED
-}
-
 model AdoptionPost {
   id          String         @id @default(cuid())
   ownerId     String
@@ -347,12 +392,6 @@ model AdoptionPost {
   requests AdoptionRequest[]
 
   @@map("adoption_posts")
-}
-
-enum AdoptionRequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
 }
 
 model AdoptionRequest {
@@ -372,21 +411,6 @@ model AdoptionRequest {
 // ─────────────────────────────────────────────
 // RESCUE
 // ─────────────────────────────────────────────
-
-enum RescueStatus {
-  REPORTED
-  ASSIGNED
-  IN_PROGRESS
-  RESCUED
-  CLOSED
-}
-
-enum RescueUrgency {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
 
 model RescueReport {
   id          String        @id @default(cuid())
@@ -411,18 +435,6 @@ model RescueReport {
 // ─────────────────────────────────────────────
 // NOTIFICATIONS
 // ─────────────────────────────────────────────
-
-enum NotificationType {
-  BOOKING_CONFIRMED
-  BOOKING_REMINDER
-  BOOKING_CANCELLED
-  ORDER_SHIPPED
-  ADOPTION_REQUEST
-  RESCUE_UPDATE
-  EVENT_REMINDER
-  HEALTH_REMINDER
-  GENERAL
-}
 
 model Notification {
   id        String           @id @default(cuid())
@@ -457,37 +469,35 @@ model Review {
 }
 
 // ─────────────────────────────────────────────
-// LOST & FOUND
+// CHAT
 // ─────────────────────────────────────────────
 
-enum LostFoundType {
-  LOST
-  FOUND
+model ChatRoom {
+  id           String       @id @default(cuid())
+  type         ChatRoomType
+  userId       String
+  user         User         @relation("UserChatRooms", fields: [userId], references: [id], onDelete: Cascade)
+  providerName String?
+  subject      String?
+  isOpen       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  messages ChatMessage[]
+
+  @@map("chat_rooms")
 }
 
-enum LostFoundStatus {
-  OPEN
-  RESOLVED
+model ChatMessage {
+  id        String      @id @default(cuid())
+  roomId    String
+  room      ChatRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User        @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName String
+  content   String
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  @@map("chat_messages")
 }
-
-model LostFoundPet {
-  id              String         @id @default(cuid())
-  reporterId      String
-  reporter        User           @relation(fields: [reporterId], references: [id], onDelete: Cascade)
-  type            LostFoundType
-  petName         String?
-  species         String
-  description     String?
-  location        String
-  city            String
-  latitude        Float?
-  longitude       Float?
-  imageUrl        String?
-  status          LostFoundStatus @default(OPEN)
-  dateLostOrFound DateTime       @default(now())
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  @@map("lost_found_pets")
-}
-
