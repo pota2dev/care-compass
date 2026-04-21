@@ -18,6 +18,8 @@ import {
   Settings,
   LogOut,
   Sparkles,
+  Wallet,
+  Search
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -26,7 +28,12 @@ const NAV_ITEMS = [
     items: [
       { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
       { href: "/pets", icon: PawPrint, label: "My Pets" },
+
       { href: "/bookings", icon: CalendarDays, label: "Bookings" },
+
+      { href: "/expenses", icon: Wallet, label: "Expenses" },
+      { href: "/bookings", icon: CalendarDays, label: "Bookings", badge: 3 },
+
       { href: "/shop/orders", icon: ShoppingCart, label: "Orders" },
     ],
   },
@@ -49,18 +56,26 @@ const NAV_ITEMS = [
       { href: "/events", icon: CalendarCheck, label: "Events" },
       { href: "/adoption", icon: Heart, label: "Adoption" },
       { href: "/rescue", icon: AlertTriangle, label: "Rescue" },
+
     ],
   },
   {
     label: "Tools",
     items: [
       { href: "/pet-care", icon: Sparkles, label: "Care Recommendations" },
+
+      { href: "/lost-found", icon: Search, label: "Lost & Found" }
+
     ],
   },
   {
     label: "Account",
     items: [
       { href: "/profile", icon: User, label: "Profile" },
+
+
+      { href: "/notifications", icon: Bell, label: "Notifications", badge: 5 },
+
       { href: "/settings", icon: Settings, label: "Settings" },
     ],
   },
@@ -151,12 +166,21 @@ export default function Sidebar() {
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   <span className="flex-1">{item.label}</span>
+
                   {item.label === "Care Recommendations" && (
                     <span
                       className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                       style={{ backgroundColor: "#C8DFB0", color: "#2D5016" }}
                     >
                       AI
+
+                  {item.badge && (
+                    <span
+                      className="text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: "#C8593A" }}
+                    >
+                      {item.badge}
+
                     </span>
                   )}
                 </Link>
@@ -176,7 +200,12 @@ export default function Sidebar() {
           className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm transition-all"
           style={{ color: "rgba(45,80,22,0.7)" }}
         >
+
           <LogOut className="w-4 h-4" /> Sign Out
+
+          <LogOut className="w-4 h-4" />
+          Sign Out
+
         </button>
       </div>
     </aside>

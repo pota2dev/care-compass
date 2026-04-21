@@ -5,13 +5,28 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default function NewEventPage() {
+export default function EditEventForm({ event }: { event: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  const toLocalISO = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const offset = date.getTimezoneOffset() * 60000;
+    return (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
+  };
+
   const [form, setForm] = useState({
-    title: "", description: "", category: "MEETUP",
-    location: "", city: "Dhaka", startDate: "", endDate: "",
-    maxAttendees: "", isFree: true, fee: "",
+    title: event.title || "",
+    description: event.description || "",
+    category: event.category || "MEETUP",
+    location: event.location || "",
+    city: event.city || "Dhaka",
+    startDate: toLocalISO(event.startDate),
+    endDate: toLocalISO(event.endDate),
+    maxAttendees: event.maxAttendees?.toString() || "",
+    isFree: event.isFree,
+    fee: event.fee?.toString() || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,8 +39,8 @@ export default function NewEventPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/events", {
-        method: "POST",
+      const res = await fetch(`/api/events/${event.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
@@ -34,7 +49,7 @@ export default function NewEventPage() {
         }),
       });
       if (res.ok) router.push("/events");
-      else alert("Failed to create event");
+      else alert("Failed to update event");
     } catch(err) {
       alert("An error occurred");
     } finally {
@@ -51,8 +66,8 @@ export default function NewEventPage() {
           <ArrowLeft className="w-4 h-4 text-gray-500" />
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-bold">Create Event</h1>
-          <p className="text-sm text-gray-400">Organize a community pet event</p>
+          <h1 className="font-display text-2xl font-bold">Update Event</h1>
+          <p className="text-sm text-gray-400">Modify your community pet event</p>
         </div>
       </div>
 
@@ -115,7 +130,7 @@ export default function NewEventPage() {
 
         <button type="submit" disabled={loading}
           className="w-full bg-[#2D5016] text-white py-3.5 rounded-xl font-medium hover:bg-[#4A7C28] transition-all disabled:opacity-50">
-          {loading ? "Creating..." : "Publish Event"}
+          {loading ? "Updating..." : "Update Event"}
         </button>
       </form>
     </div>

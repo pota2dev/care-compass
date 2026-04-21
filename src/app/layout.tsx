@@ -17,11 +17,11 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Pet CareCompass", template: "%s | Pet CareCompass" },
+  title: { default: "CareCompass", template: "%s | CareCompass" },
   description: "Bangladesh's comprehensive pet care platform — vets, grooming, daycare, adoption, rescue & community events.",
   keywords: ["pet care", "veterinary", "pet adoption", "pet grooming", "pet daycare", "Bangladesh"],
   openGraph: {
-    title: "Pet CareCompass",
+    title: "CareCompass",
     description: "Your complete pet care companion",
     type: "website",
   },

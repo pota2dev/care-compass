@@ -5,21 +5,23 @@ import { sendBookingConfirmationEmail } from "@/lib/email";
 import { z } from "zod";
 
 const createBookingSchema = z.object({
-  petId:         z.string(),
-  providerId:    z.string(),
-  timeslotId:    z.string(),
-  type:          z.enum(["VET_APPOINTMENT", "GROOMING", "DAYCARE"]),
-  notes:         z.string().optional(),
+  petId: z.string(),
+  providerId: z.string(),
+  timeslotId: z.string(),
+  type: z.enum(["VET_APPOINTMENT", "GROOMING", "DAYCARE"]),
+  notes: z.string().optional(),
   isHomeService: z.boolean().optional(),
-  homeAddress:   z.string().optional(),
+  homeAddress: z.string().optional(),
 });
 
 export async function GET() {
   const { userId: clerkId } = await auth();
-  if (!clerkId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!clerkId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await prisma.user.findUnique({ where: { clerkId } });
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (!user)
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const bookings = await prisma.booking.findMany({
     where: { userId: user.id },
@@ -41,40 +43,52 @@ export async function POST(req: NextRequest) {
   }
 
   const clerkEmail = clerkUser.emailAddresses[0]?.emailAddress ?? "";
-  const clerkName  = clerkUser.fullName ?? clerkUser.firstName ?? "there";
+  const clerkName = clerkUser.fullName ?? clerkUser.firstName ?? "there";
 
   const user = await prisma.user.findUnique({ where: { clerkId } });
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (!user)
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const body = await req.json();
   const parsed = createBookingSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const timeslot = await prisma.timeslot.findUnique({
     where: { id: parsed.data.timeslotId },
   });
-  if (!timeslot || !timeslot.isAvailable || timeslot.bookedCount >= timeslot.maxCapacity) {
-    return NextResponse.json({ error: "Timeslot not available" }, { status: 409 });
+  if (
+    !timeslot ||
+    !timeslot.isAvailable ||
+    timeslot.bookedCount >= timeslot.maxCapacity
+  ) {
+    return NextResponse.json(
+      { error: "Timeslot not available" },
+      { status: 409 },
+    );
   }
 
   // Store home address inside notes field — no schema change needed
-  const finalNotes = parsed.data.isHomeService && parsed.data.homeAddress
-    ? `HOME SERVICE — Address: ${parsed.data.homeAddress}${parsed.data.notes ? `. Notes: ${parsed.data.notes}` : ""}`
-    : parsed.data.notes ?? null;
+  const finalNotes =
+    parsed.data.isHomeService && parsed.data.homeAddress
+      ? `HOME SERVICE — Address: ${parsed.data.homeAddress}${parsed.data.notes ? `. Notes: ${parsed.data.notes}` : ""}`
+      : (parsed.data.notes ?? null);
 
   const booking = await prisma.$transaction(async (tx) => {
     const newBooking = await tx.booking.create({
       data: {
-        petId:         parsed.data.petId,
-        providerId:    parsed.data.providerId,
-        timeslotId:    parsed.data.timeslotId,
-        type:          parsed.data.type,
-        userId:        user.id,
-        status:        "CONFIRMED",
+        petId: parsed.data.petId,
+        providerId: parsed.data.providerId,
+        timeslotId: parsed.data.timeslotId,
+        type: parsed.data.type,
+        userId: user.id,
+        status: "CONFIRMED",
         isHomeService: parsed.data.isHomeService ?? false,
-        notes:         finalNotes,
+        notes: finalNotes,
       },
       include: { provider: true, pet: true, timeslot: true },
     });
@@ -90,33 +104,40 @@ export async function POST(req: NextRequest) {
 
     await tx.notification.create({
       data: {
-        userId:  user.id,
-        type:    "BOOKING_CONFIRMED",
-        title:   "Booking Confirmed",
+        userId: user.id,
+        type: "BOOKING_CONFIRMED",
+        title: "Booking Confirmed",
         message: `Your ${parsed.data.type.replace("_", " ").toLowerCase()} for ${newBooking.pet.name} is confirmed.`,
-        link:    `/bookings`,
+        link: `/bookings`,
       },
     });
 
     return newBooking;
   });
 
-  const dateTime = new Date(booking.timeslot.startTime).toLocaleString("en-BD", {
-    weekday: "long", year: "numeric", month: "long",
-    day: "numeric", hour: "2-digit", minute: "2-digit",
-  });
+  const dateTime = new Date(booking.timeslot.startTime).toLocaleString(
+    "en-BD",
+    {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   sendBookingConfirmationEmail({
-    to:              clerkEmail,
-    userName:        clerkName,
-    petName:         booking.pet.name,
-    serviceType:     booking.type,
-    providerName:    booking.provider.name,
+    to: clerkEmail,
+    userName: clerkName,
+    petName: booking.pet.name,
+    serviceType: booking.type,
+    providerName: booking.provider.name,
     providerAddress: booking.provider.address,
     dateTime,
-    bookingId:       booking.id,
-    isHomeService:   booking.isHomeService,
-    homeAddress:     parsed.data.homeAddress,
+    bookingId: booking.id,
+    isHomeService: booking.isHomeService,
+    homeAddress: parsed.data.homeAddress,
   }).catch((err) => console.error("Booking email error:", err));
 
   return NextResponse.json(booking, { status: 201 });

@@ -12,6 +12,7 @@ export default async function ProtectedLayout({
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
 
+
   let dbUser = await prisma.user.findUnique({
     where: { clerkId: clerkUser.id },
   });
