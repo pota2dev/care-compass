@@ -78,6 +78,8 @@ model ServiceProvider {
   phone       String
   email       String
   logoUrl     String?
+  latitude    Float?
+  longitude   Float?
   isVerified  Boolean      @default(false)
   isActive    Boolean      @default(true)
   rating      Float        @default(0)
