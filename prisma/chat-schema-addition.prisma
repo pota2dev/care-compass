@@ -1,0 +1,41 @@
+// ─────────────────────────────────────────────────────────────
+// ADD THESE MODELS TO YOUR EXISTING prisma/schema.prisma
+// Add them at the bottom of the file before the last closing
+// ─────────────────────────────────────────────────────────────
+
+enum ChatRoomType {
+  ADMIN_SUPPORT
+  DAYCARE
+  SHOP
+  RESCUE
+}
+
+model ChatRoom {
+  id          String       @id @default(cuid())
+  type        ChatRoomType
+  userId      String
+  user        User         @relation("UserChatRooms", fields: [userId], references: [id], onDelete: Cascade)
+  providerId  String?
+  providerName String?
+  subject     String?
+  isOpen      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  messages    ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  roomId     String
+  room       ChatRoom  @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId   String
+  sender     User      @relation("UserMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  content    String
+  isRead     Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  @@map("chat_messages")
+}
