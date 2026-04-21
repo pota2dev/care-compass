@@ -501,3 +501,19 @@ model ChatMessage {
 
   @@map("chat_messages")
 }
+
+model LostFoundPet {
+  id          String   @id @default(cuid())
+  reporterId  String
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  name        String?
+  species     String
+  description String?
+  location    String
+  city        String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("lost_found_pets")
+}
