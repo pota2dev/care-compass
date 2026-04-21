@@ -167,3 +167,12 @@ export async function deleteHealthRecord(recordId: string, petId: string) {
     return { success: false, error: error.message };
   }
 }
+
+import { put } from "@vercel/blob";
+
+export async function uploadFileAction(formData: FormData) {
+  const file = formData.get("file") as File;
+  if (!file || file.size === 0) return null;
+  const blob = await put(file.name, file, { access: 'public' });
+  return blob.url;
+}
