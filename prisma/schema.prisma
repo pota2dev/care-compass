@@ -498,7 +498,6 @@ model LostFoundPet {
   @@map("lost_found_pets")
 }
 
-<<<<<<< HEAD
 // ─────────────────────────────────────────────
 // EXPENSES
 // ─────────────────────────────────────────────
@@ -526,5 +525,3 @@ model PetExpense {
 
   @@map("pet_expenses")
 }
-=======
->>>>>>> 5890b2f (feat: added adopted status tag and finalized pet page logic)
