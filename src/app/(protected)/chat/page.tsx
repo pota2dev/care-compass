@@ -21,12 +21,23 @@ export default async function ChatPage() {
       })
     : [];
 
+
+  const formattedRooms = rooms.map((room) => ({
+    ...room,
+    createdAt: room.createdAt.toISOString(),
+    updatedAt: room.updatedAt.toISOString(),
+    messages: room.messages.map((msg) => ({
+      ...msg,
+      createdAt: msg.createdAt.toISOString(),
+    })),
+  }));
+
   return (
     <ChatClient
       userId={user?.id ?? ""}
       userName={clerkUser.fullName ?? "User"}
       userAvatar={clerkUser.imageUrl}
-      initialRooms={rooms}
+      initialRooms={formattedRooms} 
     />
   );
 }
