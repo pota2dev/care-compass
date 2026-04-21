@@ -25,6 +25,17 @@ const customIconLost = new L.Icon({
   shadowSize: [41, 41]
 });
 
+// Fix for Leaflet "Map container is already initialized" error during React Fast Refresh
+var originalInit = (L.Map.prototype as any)._initContainer;
+(L.Map.prototype as any)._initContainer = function (id: any) {
+  var container = typeof id === "string" ? document.getElementById(id) : id;
+  if (container && container._leaflet_id) {
+    container._leaflet_id = null;
+    container.innerHTML = "";
+  }
+  originalInit.call(this, id);
+};
+
 type LeafletMapProps = {
   pets: LostFoundPet[];
   className?: string;

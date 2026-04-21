@@ -1,7 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { sendBookingConfirmationEmail } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendBookingConfirmationEmail } from "@/lib/email";
 import { z } from "zod";
 
 const createBookingSchema = z.object({
@@ -38,9 +38,7 @@ export async function POST(req: NextRequest) {
     currentUser(),
   ]);
 
-  if (!clerkId || !clerkUser) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!clerkId || !clerkUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const clerkEmail = clerkUser.emailAddresses[0]?.emailAddress ?? "";
   const clerkName = clerkUser.fullName ?? clerkUser.firstName ?? "there";
@@ -79,6 +77,12 @@ export async function POST(req: NextRequest) {
       : (parsed.data.notes ?? null);
 
   const booking = await prisma.$transaction(async (tx) => {
+    const { homeAddress, notes, ...restData } = parsed.data;
+    let combinedNotes = notes || null;
+    if (homeAddress) {
+      combinedNotes = combinedNotes ? `${combinedNotes}\nHome Address: ${homeAddress}` : `Home Address: ${homeAddress}`;
+    }
+
     const newBooking = await tx.booking.create({
       data: {
         petId: parsed.data.petId,

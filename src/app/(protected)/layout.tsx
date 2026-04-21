@@ -15,17 +15,19 @@ export default async function ProtectedLayout({
 
   let dbUser = await prisma.user.findUnique({
     where: { clerkId: clerkUser.id },
+    update: {
+      // Update these fields if they changed in Clerk
+      name: clerkUser.fullName ?? "User",
+      avatarUrl: clerkUser.imageUrl,
+      email: email,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email: email,
+      name: clerkUser.fullName ?? "User",
+      avatarUrl: clerkUser.imageUrl,
+    },
   });
-  if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        clerkId: clerkUser.id,
-        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
-        name: clerkUser.fullName ?? "User",
-        avatarUrl: clerkUser.imageUrl,
-      },
-    });
-  }
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex">

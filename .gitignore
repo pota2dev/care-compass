@@ -46,3 +46,9 @@ DESIGN.md
 AGENTS.md
 # next-agents-md
 .next-docs/
+<<<<<<< HEAD
+=======
+
+# clerk configuration (can include secrets)
+/.clerk/
+>>>>>>> 5890b2f (feat: added adopted status tag and finalized pet page logic)
