@@ -16,7 +16,10 @@ export default async function PetsPage() {
 
   const pets = await prisma.pet.findMany({
     where: { ownerId: user.id, isActive: true },
-    include: { healthRecords: { orderBy: { date: "desc" }, take: 1 } },
+    include: { 
+      healthRecords: { orderBy: { date: "desc" }, take: 1 },
+      adoptionPosts: true, 
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -43,51 +46,67 @@ export default async function PetsPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {pets.map((pet) => (
-            <Link key={pet.id} href={`/pets/${pet.id}`}
-              className="bg-white rounded-2xl border border-black/[0.06] p-6 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5 hover:border-[#C8DFB0] transition-all group">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 rounded-2xl bg-[#FAF7F2] flex items-center justify-center text-4xl">
-                  {petEmoji[pet.species.toLowerCase()] ?? "🐾"}
+          {pets.map((pet) => {
+            // Check if any adoption post linked to this pet is marked as ADOPTED
+            const isAdopted = pet.adoptionPosts.some(post => post.status === "ADOPTED");
+
+            return (
+              <Link key={pet.id} href={`/pets/${pet.id}`}
+                className="relative bg-white rounded-2xl border border-black/[0.06] p-6 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5 hover:border-[#C8DFB0] transition-all group">
+                
+                {/* --- ADOPTED TAG START --- */}
+                {isAdopted && (
+                  <div className="absolute top-4 right-4 z-10 bg-[#F1F1F1] text-[#71717A] text-[10px] px-2 py-0.5 rounded uppercase font-bold border border-black/5 shadow-sm">
+                    Adopted
+                  </div>
+                )}
+                {/* --- ADOPTED TAG END --- */}
+
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-[#FAF7F2] flex items-center justify-center text-4xl">
+                    {petEmoji[pet.species.toLowerCase()] ?? "🐾"}
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl font-semibold">{pet.name}</h3>
+                    <p className="text-sm text-gray-400">{pet.breed ?? pet.species}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-display text-xl font-semibold">{pet.name}</h3>
-                  <p className="text-sm text-gray-400">{pet.breed ?? pet.species}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-[#FAF7F2] rounded-xl p-3">
-                  <div className="text-gray-400 mb-0.5">Gender</div>
-                  <div className="font-medium text-gray-700">{pet.gender.charAt(0) + pet.gender.slice(1).toLowerCase()}</div>
-                </div>
-                {pet.dateOfBirth && (
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   <div className="bg-[#FAF7F2] rounded-xl p-3">
-                    <div className="text-gray-400 mb-0.5">Age</div>
-                    <div className="font-medium text-gray-700">
-                      {Math.floor((Date.now() - new Date(pet.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} years
+                    <div className="text-gray-400 mb-0.5">Gender</div>
+                    <div className="font-medium text-gray-700">{pet.gender.charAt(0) + pet.gender.slice(1).toLowerCase()}</div>
+                  </div>
+                  {pet.dateOfBirth && (
+                    <div className="bg-[#FAF7F2] rounded-xl p-3">
+                      <div className="text-gray-400 mb-0.5">Age</div>
+                      <div className="font-medium text-gray-700">
+                        {Math.floor((Date.now() - new Date(pet.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} years
+                      </div>
                     </div>
-                  </div>
-                )}
-                {pet.weight && (
-                  <div className="bg-[#FAF7F2] rounded-xl p-3">
-                    <div className="text-gray-400 mb-0.5">Weight</div>
-                    <div className="font-medium text-gray-700">{pet.weight} kg</div>
-                  </div>
-                )}
-                {pet.color && (
-                  <div className="bg-[#FAF7F2] rounded-xl p-3">
-                    <div className="text-gray-400 mb-0.5">Color</div>
-                    <div className="font-medium text-gray-700">{pet.color}</div>
-                  </div>
-                )}
-              </div>
-              {pet.healthRecords[0] && (
-                <div className="mt-4 pt-4 border-t border-black/[0.06]">
-                  <p className="text-xs text-gray-400">Last health record: {pet.healthRecords[0].type}</p>
+                  )}
+                  {pet.weight && (
+                    <div className="bg-[#FAF7F2] rounded-xl p-3">
+                      <div className="text-gray-400 mb-0.5">Weight</div>
+                      <div className="font-medium text-gray-700">{pet.weight} kg</div>
+                    </div>
+                  )}
+                  {pet.color && (
+                    <div className="bg-[#FAF7F2] rounded-xl p-3">
+                      <div className="text-gray-400 mb-0.5">Color</div>
+                      <div className="font-medium text-gray-700">{pet.color}</div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </Link>
-          ))}
+                {pet.healthRecords[0] && (
+                  <div className="mt-4 pt-4 border-t border-black/[0.06]">
+                    <p className="text-xs text-gray-400">Last health record: {pet.healthRecords[0].type}</p>
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+          
           <Link href="/pets/new"
             className="bg-white rounded-2xl border border-dashed border-black/15 p-6 flex flex-col items-center justify-center gap-3 hover:border-[#4A7C28] hover:bg-[#FAF7F2] transition-all min-h-[200px]">
             <div className="w-12 h-12 rounded-full bg-[#FAF7F2] flex items-center justify-center">

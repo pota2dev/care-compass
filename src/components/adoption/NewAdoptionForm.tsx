@@ -45,7 +45,7 @@ export default function NewAdoptionForm({ pets }: { pets: any[] }) {
       <h2 className="text-2xl font-bold font-display mb-6">Post a Pet for Adoption</h2>
       {pets.length === 0 ? (
         <div className="text-center p-6 bg-amber-50 rounded-xl text-amber-700">
-          <p>You don&apos;t have any eligible pets registered yet.</p>
+          <p>You don't have any eligible pets registered yet.</p>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-4">

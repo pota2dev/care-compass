@@ -12,20 +12,24 @@ export default async function ProtectedLayout({
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
 
-  // Upsert user into DB on every access (cheap — uses unique index)
-  let dbUser = await prisma.user.findUnique({
+  const email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
+
+  // Upsert handles the "find or create" logic atomically
+  const dbUser = await prisma.user.upsert({
     where: { clerkId: clerkUser.id },
+    update: {
+      // Update these fields if they changed in Clerk
+      name: clerkUser.fullName ?? "User",
+      avatarUrl: clerkUser.imageUrl,
+      email: email,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email: email,
+      name: clerkUser.fullName ?? "User",
+      avatarUrl: clerkUser.imageUrl,
+    },
   });
-  if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        clerkId: clerkUser.id,
-        email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
-        name: clerkUser.fullName ?? "User",
-        avatarUrl: clerkUser.imageUrl,
-      },
-    });
-  }
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex">
