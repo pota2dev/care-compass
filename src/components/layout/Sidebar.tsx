@@ -22,58 +22,6 @@ import {
   Search
 } from "lucide-react";
 
-<<<<<<< HEAD
-const NAV_ITEMS = [
-  {
-    label: "Main",
-    items: [
-      { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-      { href: "/pets", icon: PawPrint, label: "My Pets" },
-<<<<<<< HEAD
-      { href: "/expenses", icon: Wallet, label: "Expenses" },
-=======
->>>>>>> 5890b2f (feat: added adopted status tag and finalized pet page logic)
-      { href: "/bookings", icon: CalendarDays, label: "Bookings", badge: 3 },
-      { href: "/shop/orders", icon: ShoppingCart, label: "Orders" },
-    ],
-  },
-  {
-    label: "Services",
-    items: [
-      { href: "/bookings/new?type=vet", icon: Home, label: "Vet Clinic" },
-      {
-        href: "/bookings/new?type=grooming",
-        icon: Scissors,
-        label: "Grooming",
-      },
-      { href: "/bookings/new?type=daycare", icon: Home, label: "Daycare" },
-      { href: "/shop", icon: ShoppingCart, label: "Shop" },
-    ],
-  },
-  {
-    label: "Community",
-    items: [
-      { href: "/events", icon: CalendarCheck, label: "Events" },
-      { href: "/adoption", icon: Heart, label: "Adoption" },
-      { href: "/rescue", icon: AlertTriangle, label: "Rescue" },
-<<<<<<< HEAD
-      { href: "/lost-found", icon: Search, label: "Lost & Found" }
-=======
->>>>>>> 5890b2f (feat: added adopted status tag and finalized pet page logic)
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { href: "/profile", icon: User, label: "Profile" },
-      { href: "/notifications", icon: Bell, label: "Notifications", badge: 5 },
-      { href: "/settings", icon: Settings, label: "Settings" },
-    ],
-  },
-];
-
-=======
->>>>>>> a740443 (Updated m3a1 features from personal repository)
 export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useUser();
@@ -116,6 +64,7 @@ export default function Sidebar() {
       items: [
         { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
         { href: "/pets", icon: PawPrint, label: "My Pets" },
+        { href: "/expenses", icon: Wallet, label: "Expenses" },
         { 
           href: "/bookings", 
           icon: CalendarDays, 
@@ -140,6 +89,7 @@ export default function Sidebar() {
         { href: "/events", icon: CalendarCheck, label: "Events" },
         { href: "/adoption", icon: Heart, label: "Adoption" },
         { href: "/rescue", icon: AlertTriangle, label: "Rescue" },
+        { href: "/lost-found", icon: Search, label: "Lost & Found" }
       ],
     },
     {
