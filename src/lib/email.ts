@@ -1,8 +1,20 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy_placeholder_for_build");
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  console.log(
+    "RESEND_API_KEY loaded:",
+    !!key,
+    "starts with:",
+    key?.slice(0, 6),
+  );
+  if (!key) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  return new Resend(key);
+}
 
-const FROM = "Pet CareCompass <notifications@carecompass.com>";
+const FROM = "Pet CareCompass <onboarding@resend.dev>";
 // During dev/testing with Resend free tier you can use:
 // "Pet CareCompass <onboarding@resend.dev>"
 
@@ -99,7 +111,12 @@ function infoRow(label: string, value: string) {
 // ─────────────────────────────────────────────────────────────
 // SHARED: section header
 // ─────────────────────────────────────────────────────────────
-function sectionHeader(emoji: string, title: string, subtitle: string, color = "#2D5016") {
+function sectionHeader(
+  emoji: string,
+  title: string,
+  subtitle: string,
+  color = "#2D5016",
+) {
   return `
   <div style="text-align:center;margin-bottom:28px;">
     <div style="font-size:48px;margin-bottom:12px;">${emoji}</div>
@@ -112,8 +129,16 @@ function sectionHeader(emoji: string, title: string, subtitle: string, color = "
 // 1. BOOKING CONFIRMATION
 // ─────────────────────────────────────────────────────────────
 export async function sendBookingConfirmationEmail({
-  to, userName, petName, serviceType, providerName,
-  providerAddress, dateTime, bookingId, isHomeService, homeAddress,
+  to,
+  userName,
+  petName,
+  serviceType,
+  providerName,
+  providerAddress,
+  dateTime,
+  bookingId,
+  isHomeService,
+  homeAddress,
 }: {
   to: string;
   userName: string;
@@ -127,7 +152,9 @@ export async function sendBookingConfirmationEmail({
   homeAddress?: string;
 }) {
   const serviceEmoji: Record<string, string> = {
-    VET_APPOINTMENT: "🏥", GROOMING: "✂️", DAYCARE: "🏡",
+    VET_APPOINTMENT: "🏥",
+    GROOMING: "✂️",
+    DAYCARE: "🏡",
   };
 
   const content = `
@@ -150,14 +177,18 @@ export async function sendBookingConfirmationEmail({
       </table>
     </div>
 
-    ${isHomeService ? `
+    ${
+      isHomeService
+        ? `
     <div style="background:#FDF0D5;border-radius:10px;padding:14px 18px;margin:0 0 20px;border-left:4px solid #C47A10;">
       <p style="margin:0;color:#C47A10;font-size:13px;font-weight:600;">🏠 Home Service Reminder</p>
       <p style="margin:6px 0 0;color:#8A5C00;font-size:13px;">
         Our groomer will visit you at: <strong>${homeAddress}</strong><br/>
         Please ensure someone is home at the scheduled time.
       </p>
-    </div>` : ""}
+    </div>`
+        : ""
+    }
 
     <div style="background:#F2F7EC;border-radius:10px;padding:14px 18px;margin:0 0 20px;">
       <p style="margin:0;color:#2D5016;font-size:13px;font-weight:600;">📌 What to bring / prepare</p>
@@ -171,7 +202,7 @@ export async function sendBookingConfirmationEmail({
     ${emailButton("View My Bookings →", `${process.env.NEXT_PUBLIC_APP_URL}/bookings`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `✅ Booking Confirmed — ${serviceType.replace("_", " ")} for ${petName}`,
@@ -183,8 +214,13 @@ export async function sendBookingConfirmationEmail({
 // 2. BOOKING REMINDER (sent 24h before)
 // ─────────────────────────────────────────────────────────────
 export async function sendBookingReminderEmail({
-  to, userName, petName, serviceType,
-  providerName, dateTime, bookingId,
+  to,
+  userName,
+  petName,
+  serviceType,
+  providerName,
+  dateTime,
+  bookingId,
 }: {
   to: string;
   userName: string;
@@ -216,7 +252,7 @@ export async function sendBookingReminderEmail({
     ${emailButton("View Booking Details →", `${process.env.NEXT_PUBLIC_APP_URL}/bookings`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `⏰ Reminder — ${petName}'s appointment is tomorrow!`,
@@ -228,7 +264,12 @@ export async function sendBookingReminderEmail({
 // 3. ORDER CONFIRMATION
 // ─────────────────────────────────────────────────────────────
 export async function sendOrderConfirmationEmail({
-  to, userName, orderId, items, totalAmount, shippingAddress,
+  to,
+  userName,
+  orderId,
+  items,
+  totalAmount,
+  shippingAddress,
 }: {
   to: string;
   userName: string;
@@ -237,7 +278,9 @@ export async function sendOrderConfirmationEmail({
   totalAmount: number;
   shippingAddress: string;
 }) {
-  const itemRows = items.map((item) => `
+  const itemRows = items
+    .map(
+      (item) => `
     <tr>
       <td style="padding:10px 0;color:#2D5016;font-size:13px;border-bottom:1px solid #E8F0DE;">
         ${item.name}
@@ -249,7 +292,9 @@ export async function sendOrderConfirmationEmail({
         ৳ ${(item.quantity * item.unitPrice).toLocaleString()}
       </td>
     </tr>
-  `).join("");
+  `,
+    )
+    .join("");
 
   const content = `
     ${sectionHeader("📦", "Order Placed!", "Your order is confirmed and being prepared")}
@@ -297,7 +342,7 @@ export async function sendOrderConfirmationEmail({
     ${emailButton("Track My Order →", `${process.env.NEXT_PUBLIC_APP_URL}/shop/orders/${orderId}`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `📦 Order Confirmed — #${orderId.slice(-8).toUpperCase()} · ৳ ${totalAmount.toLocaleString()}`,
@@ -309,7 +354,10 @@ export async function sendOrderConfirmationEmail({
 // 4. ORDER DELIVERED
 // ─────────────────────────────────────────────────────────────
 export async function sendOrderDeliveredEmail({
-  to, userName, orderId, totalAmount,
+  to,
+  userName,
+  orderId,
+  totalAmount,
 }: {
   to: string;
   userName: string;
@@ -339,7 +387,7 @@ export async function sendOrderDeliveredEmail({
     ${emailButton("Shop Again →", `${process.env.NEXT_PUBLIC_APP_URL}/shop`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `✅ Delivered — Order #${orderId.slice(-8).toUpperCase()}`,
@@ -351,8 +399,14 @@ export async function sendOrderDeliveredEmail({
 // 5. RESCUE REPORT SUBMITTED
 // ─────────────────────────────────────────────────────────────
 export async function sendRescueConfirmationEmail({
-  to, userName, reportId, animalType, condition,
-  urgency, location, description,
+  to,
+  userName,
+  reportId,
+  animalType,
+  condition,
+  urgency,
+  location,
+  description,
 }: {
   to: string;
   userName: string;
@@ -364,13 +418,19 @@ export async function sendRescueConfirmationEmail({
   description?: string;
 }) {
   const urgencyColor: Record<string, string> = {
-    LOW: "#4A7C28", MEDIUM: "#C47A10", HIGH: "#C8593A", CRITICAL: "#DC2626",
+    LOW: "#4A7C28",
+    MEDIUM: "#C47A10",
+    HIGH: "#C8593A",
+    CRITICAL: "#DC2626",
   };
   const urgencyBg: Record<string, string> = {
-    LOW: "#F2F7EC", MEDIUM: "#FDF0D5", HIGH: "#F9EDE8", CRITICAL: "#FEE2E2",
+    LOW: "#F2F7EC",
+    MEDIUM: "#FDF0D5",
+    HIGH: "#F9EDE8",
+    CRITICAL: "#FEE2E2",
   };
   const color = urgencyColor[urgency] ?? "#C47A10";
-  const bg    = urgencyBg[urgency]    ?? "#FDF0D5";
+  const bg = urgencyBg[urgency] ?? "#FDF0D5";
 
   const content = `
     ${sectionHeader("🚨", "Rescue Report Received", "Our rescue network has been notified", "#C8593A")}
@@ -412,7 +472,7 @@ export async function sendRescueConfirmationEmail({
     ${emailButton("View Report Status →", `${process.env.NEXT_PUBLIC_APP_URL}/rescue`)}
   `;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `🚨 Rescue Report #${reportId.slice(-8).toUpperCase()} — ${animalType} in ${urgency} urgency`,

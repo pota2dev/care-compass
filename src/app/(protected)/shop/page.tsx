@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import AddToCartButton from "@/components/shop/AddToCartButton";
 import { ShoppingBag } from "lucide-react";
@@ -14,17 +13,37 @@ const CATEGORIES: { value: ProductCategory | "ALL"; label: string }[] = [
   { value: "GROOMING_SUPPLIES", label: "Grooming" },
 ];
 
-export default async function ShopPage(props: {
-  searchParams: Promise<{ category?: string }>;
+const CATEGORY_EMOJI: Record<string, string> = {
+  FOOD: "🦴",
+  TOYS: "🎾",
+  ACCESSORIES: "🐾",
+  MEDICINE: "💊",
+  GROOMING_SUPPLIES: "🪮",
+  OTHER: "🛒",
+};
+
+const CATEGORY_LABEL: Record<string, string> = {
+  FOOD: "Food & Nutrition",
+  TOYS: "Toys",
+  ACCESSORIES: "Accessories",
+  MEDICINE: "Medicine",
+  GROOMING_SUPPLIES: "Grooming",
+  OTHER: "Other",
+};
+
+export default async function ShopPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>; // ✅ Next.js 15: Promise type
 }) {
-  const searchParams = await props.searchParams;
-  const category = searchParams.category as ProductCategory | "ALL" | undefined;
+  const { category: rawCategory } = await searchParams; // ✅ await before use
+  const category = rawCategory as ProductCategory | undefined;
 
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
       stock: { gt: 0 },
-      ...(category && category !== "ALL" ? { category } : {}),
+      ...(category && category !== ("ALL" as any) ? { category } : {}),
     },
     include: { provider: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
@@ -34,23 +53,43 @@ export default async function ShopPage(props: {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-3xl font-bold text-gray-900">Pet Shop</h1>
-          <p className="text-sm text-forest-400/60 mt-1">{products.length} products available</p>
+          <h1 className="font-display text-3xl font-bold text-gray-900">
+            Pet Shop
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "#8A9480" }}>
+            {products.length} products available
+          </p>
         </div>
-        <Link href="/shop/cart" className="inline-flex items-center gap-2 bg-white border border-forest-500/15 text-forest-500 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-forest-50 transition-all">
-          <ShoppingBag className="w-4 h-4" /> Cart
+        <Link
+          href="/shop/cart"
+          className="inline-flex items-center gap-2 bg-white border px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-[#F2F7EC]"
+          style={{ borderColor: "rgba(45,80,22,0.15)", color: "#2D5016" }}
+        >
+          <ShoppingBag className="w-4 h-4" /> View Cart
         </Link>
       </div>
 
       {/* Category tabs */}
       <div className="flex gap-2 flex-wrap mb-6">
         {CATEGORIES.map((cat) => (
-          <Link key={cat.value} href={cat.value === "ALL" ? "/shop" : `/shop?category=${cat.value}`}
-            className={`px-4 py-2 rounded-full text-xs font-medium border transition-all ${
-              (category === cat.value || (!category && cat.value === "ALL"))
-                ? "bg-forest-500 text-white border-forest-500"
-                : "bg-white text-forest-400/70 border-forest-500/15 hover:border-forest-500/30"
-            }`}>
+          <Link
+            key={cat.value}
+            href={cat.value === "ALL" ? "/shop" : `/shop?category=${cat.value}`}
+            className="px-4 py-2 rounded-full text-xs font-medium border transition-all"
+            style={
+              category === cat.value || (!category && cat.value === "ALL")
+                ? {
+                    backgroundColor: "#2D5016",
+                    color: "#fff",
+                    borderColor: "#2D5016",
+                  }
+                : {
+                    backgroundColor: "#fff",
+                    color: "rgba(45,80,22,0.7)",
+                    borderColor: "rgba(45,80,22,0.15)",
+                  }
+            }
+          >
             {cat.label}
           </Link>
         ))}
@@ -58,24 +97,62 @@ export default async function ShopPage(props: {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {products.map((product) => (
-          <div key={product.id} className="bg-white border border-forest-500/10 rounded-2xl overflow-hidden hover:shadow-md transition-all group">
-            <div className="h-32 bg-forest-50 flex items-center justify-center text-5xl border-b border-forest-500/8">
+          <div
+            key={product.id}
+            className="bg-white border rounded-2xl overflow-hidden hover:shadow-md transition-all group"
+            style={{ borderColor: "rgba(45,80,22,0.1)" }}
+          >
+            <div
+              className="h-32 flex items-center justify-center text-5xl border-b"
+              style={{
+                backgroundColor: "#FAF7F2",
+                borderColor: "rgba(45,80,22,0.08)",
+              }}
+            >
               {CATEGORY_EMOJI[product.category] ?? "🛒"}
             </div>
             <div className="p-5">
-              <div className="text-[10px] text-forest-400/50 uppercase tracking-wider mb-1">{CATEGORY_LABEL[product.category]}</div>
-              <h3 className="font-display text-base font-semibold text-gray-900 mb-1 group-hover:text-forest-500 transition-colors">
+              <div
+                className="text-[10px] uppercase tracking-wider mb-1"
+                style={{ color: "#8A9480" }}
+              >
+                {CATEGORY_LABEL[product.category]}
+              </div>
+              <h3 className="font-display text-base font-semibold text-gray-900 mb-1 group-hover:text-[#2D5016] transition-colors">
                 {product.name}
               </h3>
               {product.description && (
-                <p className="text-xs text-forest-400/60 line-clamp-2 mb-3">{product.description}</p>
+                <p
+                  className="text-xs line-clamp-2 mb-3"
+                  style={{ color: "#8A9480" }}
+                >
+                  {product.description}
+                </p>
               )}
               <div className="flex items-center justify-between mt-auto">
                 <div>
-                  <span className="font-display text-xl font-bold text-forest-500">{formatCurrency(product.price)}</span>
-                  <div className="text-[10px] text-forest-400/50 mt-0.5">{product.stock} in stock</div>
+                  <span
+                    className="font-display text-xl font-bold"
+                    style={{ color: "#2D5016" }}
+                  >
+                    ৳ {product.price.toLocaleString()}
+                  </span>
+                  <div
+                    className="text-[10px] mt-0.5"
+                    style={{ color: "#8A9480" }}
+                  >
+                    {product.stock} in stock
+                  </div>
                 </div>
-                <AddToCartButton product={{ id: product.id, name: product.name, price: product.price }} />
+                <AddToCartButton
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    imageEmoji: CATEGORY_EMOJI[product.category] ?? "🛒",
+                    category: CATEGORY_LABEL[product.category],
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -84,11 +161,3 @@ export default async function ShopPage(props: {
     </div>
   );
 }
-
-const CATEGORY_EMOJI: Record<string, string> = {
-  FOOD: "🦴", TOYS: "🎾", ACCESSORIES: "🐾", MEDICINE: "💊", GROOMING_SUPPLIES: "🪮", OTHER: "🛒",
-};
-const CATEGORY_LABEL: Record<string, string> = {
-  FOOD: "Food & Nutrition", TOYS: "Toys", ACCESSORIES: "Accessories",
-  MEDICINE: "Medicine", GROOMING_SUPPLIES: "Grooming", OTHER: "Other",
-};
