@@ -152,7 +152,6 @@ export default function Sidebar() {
        label: "Tools",
        items: [
         { href: "/pet-care", icon: Sparkles, label: "Care Recommendations" },
-        { href: "/lost-found", icon: Search, label: "Lost & Found" }
       ],
     },
     {
