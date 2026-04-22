@@ -19,7 +19,7 @@ export default async function ProtectedLayout({
       // Update these fields if they changed in Clerk
       name: clerkUser.fullName ?? "User",
       avatarUrl: clerkUser.imageUrl,
-      email: clerkUser.emailAddresses[0]?.emailAddress,,
+      email: clerkUser.emailAddresses[0]?.emailAddress,
     },
     create: {
       clerkId: clerkUser.id,
