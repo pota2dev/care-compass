@@ -13,7 +13,7 @@ export default async function ProtectedLayout({
   if (!clerkUser) redirect("/sign-in");
 
 
-  let dbUser = await prisma.user.findUnique({
+  const dbUser = await prisma.user.upsert({
     where: { clerkId: clerkUser.id },
     update: {
       // Update these fields if they changed in Clerk
