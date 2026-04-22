@@ -23,7 +23,7 @@ export default async function ProtectedLayout({
     },
     create: {
       clerkId: clerkUser.id,
-      email: email,
+      email: clerkUser.emailAddresses[0]?.emailAddress,
       name: clerkUser.fullName ?? "User",
       avatarUrl: clerkUser.imageUrl,
     },
