@@ -14,6 +14,7 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
   const [error, setError] = useState("");
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [sendInstantReminder, setSendInstantReminder] = useState(false);
 
   const [formData, setFormData] = useState({
     type: "GENERAL",
@@ -48,6 +49,7 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
         documentUrl: finalDocumentUrl || undefined,
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         allergies: formData.allergies,
+        sendInstantReminder,
       });
 
       if (!result.success) {
@@ -67,6 +69,7 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
       });
       setDocumentUrl(null);
       setDocumentFile(null);
+      setSendInstantReminder(false);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -249,6 +252,21 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
             )}
           </div>
         </div>
+
+        {formData.type === "VACCINATION" && (
+          <div className="pt-2 flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="instantReminder"
+              checked={sendInstantReminder}
+              onChange={(e) => setSendInstantReminder(e.target.checked)}
+              className="w-4 h-4 text-forest-600 rounded focus:ring-forest-500 border-gray-300"
+            />
+            <label htmlFor="instantReminder" className="text-sm font-medium text-gray-700">
+              Send reminder email now (Test)
+            </label>
+          </div>
+        )}
 
         <div className="pt-4 flex justify-end">
           <button
