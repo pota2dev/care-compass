@@ -58,7 +58,7 @@ export function FileUploadDropzone({
     if (onFileChange) {
       onFileChange(selectedFile);
     }
-    // Synchronize HTML input so it works seamlessly with native HTML form submissions Server Actions
+    // Synchronize the always-mounted hidden input so native FormData (server actions) picks it up
     if (inputRef.current) {
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(selectedFile);
@@ -95,6 +95,20 @@ export function FileUploadDropzone({
         }
       }}
     >
+      {/* Always mounted — keeps the file in FormData even after the UI swaps to the file-info branch */}
+      <input
+        ref={inputRef}
+        name={name}
+        type="file"
+        accept={accept}
+        className="sr-only"
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFileSelection(e.target.files[0]);
+          }
+        }}
+      />
+
       {file ? (
         <div className="flex flex-col items-center space-y-3">
           <div className="p-3 bg-forest-100 rounded-full text-forest-600">
@@ -122,21 +136,13 @@ export function FileUploadDropzone({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
             </svg>
           </div>
-          <label className="cursor-pointer bg-forest-600 shadow-sm text-white rounded-lg text-sm px-5 py-2.5 font-medium hover:bg-forest-700 focus-within:ring-2 focus-within:ring-forest-500 focus-within:outline-none transition-all">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="cursor-pointer bg-forest-600 shadow-sm text-white rounded-lg text-sm px-5 py-2.5 font-medium hover:bg-forest-700 focus:ring-2 focus:ring-forest-500 focus:outline-none transition-all"
+          >
             {labelText}
-            <input
-              ref={inputRef}
-              name={name}
-              type="file"
-              accept={accept}
-              className="sr-only"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleFileSelection(e.target.files[0]);
-                }
-              }}
-            />
-          </label>
+          </button>
           <div className="mt-3 text-xs text-gray-500">
             <span className="font-semibold text-gray-700">Paste (Ctrl+V)</span>, drag and drop, or click
           </div>

@@ -34,7 +34,7 @@ export default function NewLostFoundPage() {
           let imageUrl: string | undefined = undefined;
 
           if (imageFile && imageFile.size > 0) {
-            const blob = await put(imageFile.name, imageFile, { access: 'public' });
+            const blob = await put(imageFile.name, imageFile, { access: 'public', addRandomSuffix: true });
             imageUrl = blob.url;
           }
           
