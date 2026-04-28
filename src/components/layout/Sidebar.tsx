@@ -18,9 +18,65 @@ import {
   Bell,
   Settings,
   LogOut,
+  Sparkles,
   Wallet,
-  Search
+  Search,
 } from "lucide-react";
+
+const NAV_ITEMS = [
+  {
+    label: "Main",
+    items: [
+      { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { href: "/pets", icon: PawPrint, label: "My Pets" },
+      { href: "/bookings", icon: CalendarDays, label: "Bookings" },
+      { href: "/expenses", icon: Wallet, label: "Expenses" },
+      { href: "/bookings", icon: CalendarDays, label: "Bookings", badge: 3 },
+      { href: "/shop/orders", icon: ShoppingCart, label: "Orders" },
+    ],
+  },
+  {
+    label: "Services",
+    items: [
+      { href: "/bookings/new?type=vet", icon: Home, label: "Vet Clinic" },
+      {
+        href: "/bookings/new?type=grooming",
+        icon: Scissors,
+        label: "Grooming",
+      },
+      { href: "/bookings/new?type=daycare", icon: Home, label: "Daycare" },
+      { href: "/shop", icon: ShoppingCart, label: "Shop" },
+    ],
+  },
+  {
+    label: "Community",
+    items: [
+      { href: "/events", icon: CalendarCheck, label: "Events" },
+      { href: "/adoption", icon: Heart, label: "Adoption" },
+      { href: "/rescue", icon: AlertTriangle, label: "Rescue" },
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      { href: "/pet-care", icon: Sparkles, label: "Care Recommendations" },
+      { href: "/lost-found", icon: Search, label: "Lost & Found" },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { href: "/profile", icon: User, label: "Profile" },
+      {
+        href: "/notifications",
+        icon: Bell,
+        label: "Notifications",
+        badge: 5,
+      },
+      { href: "/settings", icon: Settings, label: "Settings" },
+    ],
+  },
+];
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -93,6 +149,12 @@ export default function Sidebar() {
       ],
     },
     {
+       label: "Tools",
+       items: [
+        { href: "/pet-care", icon: Sparkles, label: "Care Recommendations" },
+      ],
+    },
+    {
       label: "Account",
       items: [
         { href: "/profile", icon: User, label: "Profile" },
@@ -124,7 +186,7 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* User pill */}
+      {/* User */}
       {user && (
         <div className="mx-3 mt-3 p-3 rounded-xl flex items-center gap-2.5" style={{ backgroundColor: "#FAF7F2" }}>
           <img src={user.imageUrl} alt={user.fullName ?? "User"} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -142,8 +204,13 @@ export default function Sidebar() {
             <p className="px-3 mb-1.5 text-[10px] font-medium uppercase tracking-widest" style={{ color: "rgba(45,80,22,0.4)" }}>
               {section.label}
             </p>
+
             {section.items.map((item) => {
-              const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href.split("?")[0]));
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/dashboard" &&
+                  pathname.startsWith(item.href.split("?")[0]));
+
               return (
                 <Link
                   key={item.href}
@@ -153,6 +220,21 @@ export default function Sidebar() {
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   <span className="flex-1">{item.label}</span>
+
+                  {/* AI badge */}
+                  {item.label === "Care Recommendations" && (
+                    <span
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: "#C8DFB0",
+                        color: "#2D5016",
+                      }}
+                    >
+                      AI
+                    </span>
+                  )}
+
+                  {/* Notification badge */}
                   {item.badge && (
                     <span className="text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: "#C8593A" }}>
                       {item.badge}
