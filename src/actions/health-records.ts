@@ -184,6 +184,6 @@ import { put } from "@vercel/blob";
 export async function uploadFileAction(formData: FormData) {
   const file = formData.get("file") as File;
   if (!file || file.size === 0) return null;
-  const blob = await put(file.name, file, { access: 'public' });
+  const blob = await put(file.name, file, { access: 'public', addRandomSuffix: true });
   return blob.url;
 }

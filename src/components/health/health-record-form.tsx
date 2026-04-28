@@ -263,7 +263,7 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
               className="w-4 h-4 text-forest-600 rounded focus:ring-forest-500 border-gray-300"
             />
             <label htmlFor="instantReminder" className="text-sm font-medium text-gray-700">
-              Send reminder email now (Test)
+              [Test] Send reminder email now
             </label>
           </div>
         )}
