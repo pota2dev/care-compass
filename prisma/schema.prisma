@@ -1,0 +1,486 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String            @id @default(cuid())
+  clerkId       String            @unique
+  email         String            @unique
+  name          String
+  phone         String?
+  avatarUrl     String?
+  role          UserRole          @default(PET_OWNER)
+  address       String?
+  city          String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reviews       Review[]
+  adoptionPosts AdoptionPost[]
+  adoptionReqs  AdoptionRequest[]
+  bookings      Booking[]
+  eventRsvps    EventRsvp[]
+  events        Event[]
+  lostFoundPets LostFoundPet[]
+  notifications Notification[]
+  orders        Order[]
+  petExpenses   PetExpense[]
+  pets          Pet[]
+  rescueReports RescueReport[]
+  provider      ServiceProvider?
+
+  @@map("users")
+}
+
+model ServiceProvider {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  name        String
+  type        ProviderType
+  description String?
+  address     String
+  city        String
+  phone       String
+  email       String
+  logoUrl     String?
+  isVerified  Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  rating      Float        @default(0)
+  reviewCount Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  reviews     Review[]
+  bookings    Booking[]
+  products    Product[]
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeslots   Timeslot[]
+
+  @@map("service_providers")
+}
+
+model Pet {
+  id            String         @id @default(cuid())
+  ownerId       String
+  name          String
+  species       String
+  breed         String?
+  gender        PetGender
+  dateOfBirth   DateTime?
+  weight        Float?
+  color         String?
+  microchipId   String?
+  photoUrl      String?
+  notes         String?
+  allergies     String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  adoptionPosts AdoptionPost[]
+  bookings      Booking[]
+  healthRecords HealthRecord[]
+  expenses      PetExpense[]
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("pets")
+}
+
+model HealthRecord {
+  id          String    @id @default(cuid())
+  petId       String
+  type        String
+  title       String?
+  description String
+  date        DateTime
+  nextDueDate DateTime?
+  vetName     String?
+  documentUrl String?
+  weight      Float?
+  allergies   String?
+  createdAt   DateTime  @default(now())
+  pet         Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+
+  @@map("health_records")
+}
+
+model Timeslot {
+  id          String          @id @default(cuid())
+  providerId  String
+  startTime   DateTime
+  endTime     DateTime
+  isAvailable Boolean         @default(true)
+  maxCapacity Int             @default(1)
+  bookedCount Int             @default(0)
+  createdAt   DateTime        @default(now())
+  bookings    Booking[]
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("timeslots")
+}
+
+model Booking {
+  id              String          @id @default(cuid())
+  userId          String
+  petId           String
+  providerId      String
+  timeslotId      String
+  type            BookingType
+  status          BookingStatus   @default(PENDING)
+  notes           String?
+  totalAmount     Float           @default(0)
+  isPaid          Boolean         @default(false)
+  stripePaymentId String?
+  isHomeService   Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  reviews         Review[]
+  pet             Pet             @relation(fields: [petId], references: [id])
+  provider        ServiceProvider @relation(fields: [providerId], references: [id])
+  timeslot        Timeslot        @relation(fields: [timeslotId], references: [id])
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model Product {
+  id          String           @id @default(cuid())
+  providerId  String?
+  name        String
+  description String?
+  price       Float
+  stock       Int              @default(0)
+  category    ProductCategory
+  imageUrl    String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  reviews     Review[]
+  orderItems  OrderItem[]
+  provider    ServiceProvider? @relation(fields: [providerId], references: [id])
+
+  @@map("products")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  stripePaymentId String?
+  stripeSessionId String?
+  shippingAddress String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           OrderItem[]
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Event {
+  id           String        @id @default(cuid())
+  creatorId    String
+  title        String
+  description  String?
+  category     EventCategory @default(MEETUP)
+  location     String
+  city         String
+  latitude     Float?
+  longitude    Float?
+  startDate    DateTime
+  endDate      DateTime?
+  maxAttendees Int?
+  imageUrl     String?
+  isFree       Boolean       @default(true)
+  fee          Float?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  rsvps        EventRsvp[]
+  creator      User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+model EventRsvp {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_rsvps")
+}
+
+model AdoptionPost {
+  id          String            @id @default(cuid())
+  ownerId     String
+  petId       String            @unique
+  type        AdoptionType
+  status      AdoptionStatus    @default(OPEN)
+  reason      String
+  description String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  owner       User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  pet         Pet               @relation(fields: [petId], references: [id])
+  requests    AdoptionRequest[]
+
+  @@map("adoption_posts")
+}
+
+model AdoptionRequest {
+  id        String                @id @default(cuid())
+  postId    String
+  userId    String
+  message   String?
+  status    AdoptionRequestStatus @default(PENDING)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  post      AdoptionPost          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("adoption_requests")
+}
+
+model RescueReport {
+  id          String        @id @default(cuid())
+  reporterId  String
+  animalType  String
+  condition   String
+  location    String
+  city        String
+  latitude    Float?
+  longitude   Float?
+  description String?
+  imageUrl    String?
+  urgency     RescueUrgency @default(MEDIUM)
+  status      RescueStatus  @default(REPORTED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  reviews     Review[]
+  reporter    User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("rescue_reports")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+model Review {
+  id                String           @id @default(cuid())
+  rating            Int
+  comment           String?
+  serviceType       ServiceType
+  userId            String
+  serviceProviderId String?
+  bookingId         String?
+  productId         String?
+  rescueReportId    String?
+  createdAt         DateTime         @default(now())
+  booking           Booking?         @relation(fields: [bookingId], references: [id])
+  product           Product?         @relation(fields: [productId], references: [id])
+  rescueReport      RescueReport?    @relation(fields: [rescueReportId], references: [id])
+  serviceProvider   ServiceProvider? @relation(fields: [serviceProviderId], references: [id])
+  user              User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model LostFoundPet {
+  id              String          @id @default(cuid())
+  reporterId      String
+  type            LostFoundType
+  petName         String?
+  species         String
+  description     String?
+  location        String
+  city            String
+  latitude        Float?
+  longitude       Float?
+  imageUrl        String?
+  status          LostFoundStatus @default(OPEN)
+  dateLostOrFound DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  reporter        User            @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("lost_found_pets")
+}
+
+model PetExpense {
+  id          String          @id @default(cuid())
+  userId      String
+  petId       String
+  amount      Float
+  category    ExpenseCategory
+  date        DateTime
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  pet         Pet             @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pet_expenses")
+}
+
+enum UserRole {
+  PET_OWNER
+  SERVICE_PROVIDER
+  ADMIN
+}
+
+enum ProviderType {
+  VET_CLINIC
+  GROOMING
+  DAYCARE
+  SHOP
+  RESCUE
+}
+
+enum PetGender {
+  MALE
+  FEMALE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum BookingType {
+  VET_APPOINTMENT
+  GROOMING
+  DAYCARE
+}
+
+enum ProductCategory {
+  FOOD
+  TOYS
+  ACCESSORIES
+  MEDICINE
+  GROOMING_SUPPLIES
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum EventCategory {
+  MEETUP
+  ADOPTION_FAIR
+  VACCINATION_CAMP
+  TRAINING_WORKSHOP
+  PET_SHOW
+  OTHER
+}
+
+enum AdoptionType {
+  PERMANENT
+  TEMPORARY_FOSTER
+}
+
+enum AdoptionStatus {
+  OPEN
+  PENDING
+  ADOPTED
+  CLOSED
+}
+
+enum AdoptionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RescueStatus {
+  REPORTED
+  ASSIGNED
+  IN_PROGRESS
+  RESCUED
+  CLOSED
+}
+
+enum RescueUrgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_REMINDER
+  BOOKING_CANCELLED
+  ORDER_SHIPPED
+  ADOPTION_REQUEST
+  RESCUE_UPDATE
+  EVENT_REMINDER
+  HEALTH_REMINDER
+  GENERAL
+  NEW_EVENT
+}
+
+enum ServiceType {
+  PRODUCT
+  VET
+  DAYCARE
+  RESCUE
+}
+
+enum LostFoundType {
+  LOST
+  FOUND
+}
+
+enum LostFoundStatus {
+  OPEN
+  RESOLVED
+}
+
+enum ExpenseCategory {
+  FOOD
+  MEDICAL
+  TOYS
+  GROOMING
+  OTHER
+}
