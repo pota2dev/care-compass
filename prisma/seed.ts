@@ -379,7 +379,11 @@ async function main() {
       where: { name: p.name },
     });
     if (!existing) {
+<<<<<<< HEAD
+      await prisma.product.create({ data: { ...p, providerId: vet1.id,  } });
+=======
       await prisma.product.create({ data: { ...p, providerId: vet1.id } });
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     }
   }
 

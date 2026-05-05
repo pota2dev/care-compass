@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+<<<<<<< HEAD
+    "dev": "next dev -p 1206",
+=======
     "dev": "next dev -p 3000",
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -28,7 +32,10 @@
     "@stripe/stripe-js": "^4.8.0",
     "@types/leaflet": "^1.9.21",
     "@uploadthing/react": "^7.1.0",
+<<<<<<< HEAD
+=======
     "@vercel/blob": "^2.3.3",
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -37,6 +44,10 @@
     "next": "15.2.8",
     "nodemailer": "^8.0.5",
     "react": "^18.3.1",
+<<<<<<< HEAD
+    "react-calendar": "^6.0.1",
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
     "recharts": "^3.8.1",
@@ -47,13 +58,20 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.3.0",
     "uploadthing": "^7.2.0",
+<<<<<<< HEAD
+=======
     "resend": "^4.0.0",
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22",
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^18",
+<<<<<<< HEAD
+    "@types/react-calendar": "^3.9.0",
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",

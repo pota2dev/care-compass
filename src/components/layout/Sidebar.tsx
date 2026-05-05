@@ -18,6 +18,12 @@ import {
   Bell,
   Settings,
   LogOut,
+<<<<<<< HEAD
+  Wallet,
+  Search
+} from "lucide-react";
+
+=======
   Sparkles,
   Wallet,
   Search,
@@ -78,6 +84,7 @@ const NAV_ITEMS = [
   },
 ];
 
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 export default function Sidebar() {
   const pathname = usePathname();
   const { user } = useUser();
@@ -98,7 +105,10 @@ export default function Sidebar() {
         
         if (notifRes.ok) {
           const notifs = await notifRes.json();
+<<<<<<< HEAD
+=======
           // Assuming your notification model has an 'isRead' field
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
           setUnreadNotifications(notifs.filter((n: any) => !n.isRead).length || notifs.length);
         }
         
@@ -120,10 +130,18 @@ export default function Sidebar() {
       items: [
         { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
         { href: "/pets", icon: PawPrint, label: "My Pets" },
+<<<<<<< HEAD
+        { href: "/calendar", icon: CalendarDays, label: "Calendar" }, // Added Calendar here
+        { href: "/expenses", icon: Wallet, label: "Expenses" },
+        { 
+          href: "/bookings", 
+          icon: CalendarCheck, // Switched to Check for list of bookings
+=======
         { href: "/expenses", icon: Wallet, label: "Expenses" },
         { 
           href: "/bookings", 
           icon: CalendarDays, 
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
           label: "Bookings", 
           badge: activeBookings > 0 ? activeBookings : null 
         },
@@ -149,12 +167,15 @@ export default function Sidebar() {
       ],
     },
     {
+<<<<<<< HEAD
+=======
        label: "Tools",
        items: [
         { href: "/pet-care", icon: Sparkles, label: "Care Recommendations" },
       ],
     },
     {
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
       label: "Account",
       items: [
         { href: "/profile", icon: User, label: "Profile" },
@@ -186,7 +207,11 @@ export default function Sidebar() {
         </Link>
       </div>
 
+<<<<<<< HEAD
+      {/* User pill */}
+=======
       {/* User */}
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
       {user && (
         <div className="mx-3 mt-3 p-3 rounded-xl flex items-center gap-2.5" style={{ backgroundColor: "#FAF7F2" }}>
           <img src={user.imageUrl} alt={user.fullName ?? "User"} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
@@ -204,6 +229,10 @@ export default function Sidebar() {
             <p className="px-3 mb-1.5 text-[10px] font-medium uppercase tracking-widest" style={{ color: "rgba(45,80,22,0.4)" }}>
               {section.label}
             </p>
+<<<<<<< HEAD
+            {section.items.map((item) => {
+              const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href.split("?")[0]));
+=======
 
             {section.items.map((item) => {
               const isActive =
@@ -211,6 +240,7 @@ export default function Sidebar() {
                 (item.href !== "/dashboard" &&
                   pathname.startsWith(item.href.split("?")[0]));
 
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
               return (
                 <Link
                   key={item.href}
@@ -220,6 +250,8 @@ export default function Sidebar() {
                 >
                   <item.icon className="w-4 h-4 flex-shrink-0" />
                   <span className="flex-1">{item.label}</span>
+<<<<<<< HEAD
+=======
 
                   {/* AI badge */}
                   {item.label === "Care Recommendations" && (
@@ -235,6 +267,7 @@ export default function Sidebar() {
                   )}
 
                   {/* Notification badge */}
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
                   {item.badge && (
                     <span className="text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: "#C8593A" }}>
                       {item.badge}
@@ -256,4 +289,8 @@ export default function Sidebar() {
       </div>
     </aside>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc

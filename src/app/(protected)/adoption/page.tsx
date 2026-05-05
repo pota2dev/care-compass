@@ -2,7 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Users, Eye } from "lucide-react"; 
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Pet Adoption" };
@@ -54,16 +54,38 @@ export default async function AdoptionPage() {
                       {post.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400 mb-1">{post.pet.breed ?? post.pet.species} · {post.type === "PERMANENT" ? "Permanent" : "Foster"}</p>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-4">{post.reason}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-xs text-gray-400 font-medium">{post._count.requests} request(s)</span>
-                    <div className="flex gap-2">
-                      <Link href={`/adoption/${post.id}/edit`} className="text-xs bg-amber-100 text-amber-700 px-3 py-1.5 rounded-full font-medium hover:bg-amber-200 transition-colors">
-                        Edit
+
+                  {/* FIXED LINK: Path matches your [id]/edit/requests folder */}
+                  <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                    <Link 
+                      href={`/adoption/${post.petId}/edit/requests`}
+                      className="flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-bold text-blue-700">
+                          {post._count.requests} Application{post._count.requests !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-md">
+                        VIEW
+                      </span>
+                    </Link>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-5">
+                    <div className="flex gap-2 w-full">
+                      <Link 
+                        href={`/adoption/${post.id}/edit`} 
+                        className="flex-1 text-center text-xs bg-amber-100 text-amber-700 py-2 rounded-lg font-semibold hover:bg-amber-200 transition-colors"
+                      >
+                        Edit Post
                       </Link>
-                      <Link href={`/adoption/${post.id}`} className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-medium hover:bg-blue-200 transition-colors">
-                        Manage
+                      <Link 
+                        href={`/adoption/${post.petId}`} 
+                        className="flex-1 text-center text-xs bg-gray-100 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-colors inline-flex items-center justify-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" /> View Page
                       </Link>
                     </div>
                   </div>
@@ -101,8 +123,10 @@ export default async function AdoptionPage() {
                   <p className="text-sm text-gray-600 line-clamp-2 mb-4">{post.reason}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-400">{post._count.requests} request{post._count.requests !== 1 ? "s" : ""}</span>
-                    <Link href={`/adoption/${post.id}`}
-                      className="text-sm bg-[#2D5016] text-white px-4 py-2 rounded-full font-medium hover:bg-[#4A7C28] transition-all">
+                    <Link 
+                      href={`/adoption/${post.petId}`}
+                      className="text-sm bg-[#2D5016] text-white px-4 py-2 rounded-full font-medium hover:bg-[#4A7C28] transition-all"
+                    >
                       Request Adoption
                     </Link>
                   </div>

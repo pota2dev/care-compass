@@ -5,7 +5,7 @@ import { formatDate } from "@/lib/utils";
 import AdoptionRequestForm from "@/components/adoption/AdoptionRequestForm";
 import AdoptionOwnerControls from "@/components/adoption/AdoptionOwnerControls";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Users } from "lucide-react";
 
 const petEmoji: Record<string, string> = { dog: "🐕", cat: "🐈", rabbit: "🐇", bird: "🦜", fish: "🐠" };
 
@@ -16,8 +16,8 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
   const user = await prisma.user.findUnique({ where: { clerkId: clerkUser.id } });
   if (!user) redirect("/sign-in");
 
-  const post = await prisma.adoptionPost.findUnique({
-    where: { id },
+  const post = await prisma.adoptionPost.findFirst({
+    where: { petId: id },
     include: {
       pet: true,
       owner: true,
@@ -25,9 +25,7 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
     },
   });
 
-  if (!post) {
-    return notFound();
-  }
+  if (!post) return notFound();
 
   const isOwner = post.ownerId === user.id;
   const existingRequest = post.requests.find(r => r.userId === user.id);
@@ -72,13 +70,6 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
                 <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-2">Reason for Posting</h3>
                 <p className="text-gray-700 leading-relaxed bg-[#FAF7F2] p-5 rounded-2xl border border-black/[0.04]">{post.reason}</p>
               </div>
-
-              {post.description && (
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-2">Additional Description</h3>
-                  <p className="text-gray-700 leading-relaxed">{post.description}</p>
-                </div>
-              )}
             </div>
 
             <div className="space-y-6">
@@ -108,9 +99,17 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
                 </div>
 
                 {isOwner ? (
-                  <div className="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100">
-                    <p className="font-medium">You posted this pet.</p>
-                    <p className="text-sm mt-1 mb-2">You have {post.requests.length} pending request(s).</p>
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <p className="font-medium text-blue-800">You posted this pet.</p>
+                    
+                    <Link 
+                      href={`/adoption/${id}/edit/requests`}
+                      className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline mt-1 mb-4"
+                    >
+                      <Users className="w-4 h-4" />
+                      View {post.requests.length} pending request(s) →
+                    </Link>
+
                     <AdoptionOwnerControls postId={post.id} currentStatus={post.status} />
                   </div>
                 ) : post.status !== "OPEN" ? (
@@ -120,7 +119,7 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
                 ) : existingRequest ? (
                   <div className="bg-green-50 text-green-800 p-4 rounded-xl border border-green-200">
                     <div className="font-semibold mb-1">Request Sent!</div>
-                    <p className="text-sm">You have already requested to adopt {post.pet.name}. The owner will review your request.</p>
+                    <p className="text-sm">You have already requested to adopt {post.pet.name}.</p>
                     <div className="mt-2 text-xs font-medium uppercase tracking-wide bg-green-200 text-green-900 inline-block px-2 py-1 rounded">
                       Status: {existingRequest.status}
                     </div>

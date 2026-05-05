@@ -12,18 +12,32 @@ export default async function ProtectedLayout({
   const clerkUser = await currentUser();
   if (!clerkUser) redirect("/sign-in");
 
+<<<<<<< HEAD
+  const email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
 
+  // Upsert handles the "find or create" logic atomically
+=======
+
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   const dbUser = await prisma.user.upsert({
     where: { clerkId: clerkUser.id },
     update: {
       // Update these fields if they changed in Clerk
       name: clerkUser.fullName ?? "User",
       avatarUrl: clerkUser.imageUrl,
+<<<<<<< HEAD
+      email: email,
+    },
+    create: {
+      clerkId: clerkUser.id,
+      email: email,
+=======
       email: clerkUser.emailAddresses[0]?.emailAddress,
     },
     create: {
       clerkId: clerkUser.id,
       email: clerkUser.emailAddresses[0]?.emailAddress,
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
       name: clerkUser.fullName ?? "User",
       avatarUrl: clerkUser.imageUrl,
     },
