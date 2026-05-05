@@ -18,23 +18,10 @@ import {
   LogOut,
   Sparkles,
   MessageCircle,
-  LucideIcon,
   Map,
 } from "lucide-react";
 
-type NavItem = {
-  href: string;
-  icon: LucideIcon;
-  label: string;
-  badge?: string;
-};
-
-type NavSection = {
-  label: string;
-  items: NavItem[];
-};
-
-const NAV_ITEMS: NavSection[] = [
+const NAV_ITEMS = [
   {
     label: "Main",
     items: [
