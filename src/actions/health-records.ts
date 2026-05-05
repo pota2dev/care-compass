@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { sendVaccinationReminder } from "@/lib/mail";
 
 export async function addHealthRecord(
   petId: string,
@@ -15,6 +16,7 @@ export async function addHealthRecord(
     documentUrl?: string;
     weight?: number;
     allergies?: string;
+    sendInstantReminder?: boolean;
   }
 ) {
   try {
@@ -88,6 +90,15 @@ export async function addHealthRecord(
           ...(data.allergies ? { allergies: data.allergies } : {}),
         },
       });
+    }
+
+    if (data.type === "VACCINATION" && data.sendInstantReminder && nextDueDate && dbUser.email) {
+      await sendVaccinationReminder(
+        dbUser.email,
+        pet.name,
+        data.title || "Vaccination",
+        nextDueDate
+      );
     }
 
     revalidatePath(`/pets/${petId}`);
@@ -166,4 +177,13 @@ export async function deleteHealthRecord(recordId: string, petId: string) {
     console.error("Failed to delete health record:", error);
     return { success: false, error: error.message };
   }
+}
+
+import { put } from "@vercel/blob";
+
+export async function uploadFileAction(formData: FormData) {
+  const file = formData.get("file") as File;
+  if (!file || file.size === 0) return null;
+  const blob = await put(file.name, file, { access: 'public', addRandomSuffix: true });
+  return blob.url;
 }

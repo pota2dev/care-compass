@@ -47,6 +47,7 @@ AGENTS.md
 # next-agents-md
 .next-docs/
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 # clerk configuration (can include secrets)
@@ -55,3 +56,8 @@ AGENTS.md
 
 .vercel
 .env*.local
+=======
+
+# clerk configuration (can include secrets)
+/.clerk/
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc

@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+=======
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { sendRescueConfirmationEmail } from "@/lib/email";
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 import { z } from "zod";
 
 const rescueSchema = z.object({
@@ -25,8 +32,24 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+<<<<<<< HEAD
   const { userId: clerkId } = await auth();
   if (!clerkId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+=======
+  // Get both auth and currentUser in parallel
+  const [{ userId: clerkId }, clerkUser] = await Promise.all([
+    auth(),
+    currentUser(),
+  ]);
+
+  if (!clerkId || !clerkUser) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // ✅ Always use the email directly from Clerk — this is the login email
+  const clerkEmail = clerkUser.emailAddresses[0]?.emailAddress ?? "";
+  const clerkName  = clerkUser.fullName ?? clerkUser.firstName ?? "there";
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 
   const user = await prisma.user.findUnique({ where: { clerkId } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -34,7 +57,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = rescueSchema.safeParse(body);
   if (!parsed.success) {
+<<<<<<< HEAD
     return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
+=======
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   }
 
   const report = await prisma.rescueReport.create({
@@ -47,5 +77,20 @@ export async function POST(req: NextRequest) {
     include: { reporter: { select: { name: true } } },
   });
 
+<<<<<<< HEAD
+=======
+  // Send to Clerk email address directly
+  sendRescueConfirmationEmail({
+    to:          clerkEmail,   // ← Clerk login email
+    userName:    clerkName,
+    reportId:    report.id,
+    animalType:  report.animalType,
+    condition:   report.condition,
+    urgency:     report.urgency,
+    location:    report.location,
+    description: report.description ?? undefined,
+  }).catch((err) => console.error("Rescue email error:", err));
+
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   return NextResponse.json(report, { status: 201 });
 }

@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
+<<<<<<< HEAD
 import { UploadDropzone } from "@/lib/uploadthing";
 import { addHealthRecord } from "@/actions/health-records";
 import { useRouter } from "next/navigation";
+=======
+import { addHealthRecord, uploadFileAction } from "@/actions/health-records";
+import { useRouter } from "next/navigation";
+import { FileUploadDropzone } from "@/components/shared/file-upload-dropzone";
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 import { Pet } from "@prisma/client";
 import { Activity, Plus, Stethoscope, Syringe, FileText, Upload } from "lucide-react";
 
@@ -13,6 +19,11 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+<<<<<<< HEAD
+=======
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [sendInstantReminder, setSendInstantReminder] = useState(false);
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 
   const [formData, setFormData] = useState({
     type: "GENERAL",
@@ -30,15 +41,33 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
     setError("");
 
     try {
+<<<<<<< HEAD
+=======
+      let finalDocumentUrl = documentUrl;
+      if (documentFile) {
+        const fileFormData = new FormData();
+        fileFormData.append("file", documentFile);
+        const url = await uploadFileAction(fileFormData);
+        if (url) finalDocumentUrl = url;
+      }
+
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
       const result = await addHealthRecord(pet.id, {
         type: formData.type,
         title: formData.title,
         description: formData.description,
         date: new Date(formData.date),
         vetName: formData.vetName,
+<<<<<<< HEAD
         documentUrl: documentUrl || undefined,
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         allergies: formData.allergies,
+=======
+        documentUrl: finalDocumentUrl || undefined,
+        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        allergies: formData.allergies,
+        sendInstantReminder,
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
       });
 
       if (!result.success) {
@@ -57,6 +86,11 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
         allergies: pet.allergies || "",
       });
       setDocumentUrl(null);
+<<<<<<< HEAD
+=======
+      setDocumentFile(null);
+      setSendInstantReminder(false);
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -216,7 +250,11 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
               Upload Prescription / Document
             </h4>
             
+<<<<<<< HEAD
             {documentUrl ? (
+=======
+            {documentUrl && !documentFile ? (
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
               <div className="bg-green-50 text-green-700 p-4 rounded-lg flex items-center justify-between border border-green-200">
                 <div className="flex items-center">
                   <FileText className="w-5 h-5 mr-3" />
@@ -231,6 +269,7 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
                 </button>
               </div>
             ) : (
+<<<<<<< HEAD
               <div className="border-2 border-dashed border-gray-200 rounded-lg p-2 bg-gray-50">
                 <UploadDropzone
                   endpoint="prescription"
@@ -248,10 +287,35 @@ export function HealthRecordForm({ pet }: { pet: Pet }) {
                   }}
                 />
               </div>
+=======
+              <FileUploadDropzone 
+                onFileChange={(file) => setDocumentFile(file)}
+                initialFile={documentFile}
+                subText="PDF, Images, or Documents allowed"
+              />
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
             )}
           </div>
         </div>
 
+<<<<<<< HEAD
+=======
+        {formData.type === "VACCINATION" && (
+          <div className="pt-2 flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="instantReminder"
+              checked={sendInstantReminder}
+              onChange={(e) => setSendInstantReminder(e.target.checked)}
+              className="w-4 h-4 text-forest-600 rounded focus:ring-forest-500 border-gray-300"
+            />
+            <label htmlFor="instantReminder" className="text-sm font-medium text-gray-700">
+              [Test] Send reminder email now
+            </label>
+          </div>
+        )}
+
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
         <div className="pt-4 flex justify-end">
           <button
             type="submit"

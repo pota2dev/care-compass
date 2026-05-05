@@ -16,7 +16,6 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
   const user = await prisma.user.findUnique({ where: { clerkId: clerkUser.id } });
   if (!user) redirect("/sign-in");
 
-  // We find by petId because your folder [id] and main page links use Pet ID
   const post = await prisma.adoptionPost.findFirst({
     where: { petId: id },
     include: {
@@ -103,7 +102,6 @@ export default async function AdoptionDetailsPage(props: { params: Promise<{ id:
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                     <p className="font-medium text-blue-800">You posted this pet.</p>
                     
-                    {/* CRITICAL FIX: Linking to your actual folder path [id]/edit/requests */}
                     <Link 
                       href={`/adoption/${id}/edit/requests`}
                       className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:underline mt-1 mb-4"

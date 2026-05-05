@@ -20,7 +20,10 @@ model User {
   city          String?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+<<<<<<< HEAD
   reviews       Review[]
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   adoptionPosts AdoptionPost[]
   adoptionReqs  AdoptionRequest[]
   bookings      Booking[]
@@ -32,6 +35,10 @@ model User {
   petExpenses   PetExpense[]
   pets          Pet[]
   rescueReports RescueReport[]
+<<<<<<< HEAD
+=======
+  reviews       Review[]
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   provider      ServiceProvider?
 
   @@map("users")
@@ -54,9 +61,15 @@ model ServiceProvider {
   reviewCount Int          @default(0)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+<<<<<<< HEAD
   reviews     Review[]
   bookings    Booking[]
   products    Product[]
+=======
+  bookings    Booking[]
+  products    Product[]
+  reviews     Review[]
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   timeslots   Timeslot[]
 
@@ -137,7 +150,10 @@ model Booking {
   isHomeService   Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+<<<<<<< HEAD
   reviews         Review[]
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   pet             Pet             @relation(fields: [petId], references: [id])
   provider        ServiceProvider @relation(fields: [providerId], references: [id])
   timeslot        Timeslot        @relation(fields: [timeslotId], references: [id])
@@ -158,7 +174,10 @@ model Product {
   isActive    Boolean          @default(true)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+<<<<<<< HEAD
   reviews     Review[]
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   orderItems  OrderItem[]
   provider    ServiceProvider? @relation(fields: [providerId], references: [id])
 
@@ -233,7 +252,11 @@ model EventRsvp {
 model AdoptionPost {
   id          String            @id @default(cuid())
   ownerId     String
+<<<<<<< HEAD
   petId       String            @unique
+=======
+  petId       String
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   type        AdoptionType
   status      AdoptionStatus    @default(OPEN)
   reason      String
@@ -276,7 +299,10 @@ model RescueReport {
   status      RescueStatus  @default(REPORTED)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+<<<<<<< HEAD
   reviews     Review[]
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   reporter    User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@map("rescue_reports")
@@ -293,11 +319,15 @@ model Notification {
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+<<<<<<< HEAD
   @@index([userId])
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
   @@map("notifications")
 }
 
 model Review {
+<<<<<<< HEAD
   id                String           @id @default(cuid())
   rating            Int
   comment           String?
@@ -315,6 +345,19 @@ model Review {
   user              User             @relation(fields: [userId], references: [id])
 
   @@index([userId])
+=======
+  id         String          @id @default(cuid())
+  userId     String
+  providerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime        @default(now())
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+  @@map("reviews")
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 }
 
 model LostFoundPet {
@@ -457,6 +500,7 @@ enum NotificationType {
   EVENT_REMINDER
   HEALTH_REMINDER
   GENERAL
+<<<<<<< HEAD
   NEW_EVENT
 }
 
@@ -465,6 +509,8 @@ enum ServiceType {
   VET
   DAYCARE
   RESCUE
+=======
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
 }
 
 enum LostFoundType {
@@ -483,4 +529,8 @@ enum ExpenseCategory {
   TOYS
   GROOMING
   OTHER
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> d067441b9309af54710333f4c1e7ec7f0cc849dc
